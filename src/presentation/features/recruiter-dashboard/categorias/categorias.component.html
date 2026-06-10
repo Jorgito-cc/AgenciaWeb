@@ -1,0 +1,87 @@
+<div class="categorias-container">
+  <div class="page-header">
+    <h1>Gestión de Categorías de Empleo</h1>
+    <p class="text-muted">Crea y administra las categorías de vacantes disponibles en la agencia</p>
+  </div>
+
+  <div class="card meta-content-card">
+    <h3>Registrar Nueva Categoría</h3>
+    <form class="inline-form" (submit)="addCategoria($event)">
+      <div class="form-group-inline">
+        <label class="form-label" for="cat-nombre">Nombre de la Categoría</label>
+        <input 
+          type="text" 
+          id="cat-nombre" 
+          class="form-input" 
+          placeholder="Ej: Tecnología, Salud, Ventas" 
+          required 
+          [value]="newCatNombre()" 
+          (input)="newCatNombre.set($any($event.target).value)"
+        />
+      </div>
+      <button type="submit" class="btn btn-primary">Guardar Categoría</button>
+    </form>
+
+    <div class="table-container" style="margin-top: 10px;">
+      <table class="responsive-table">
+        <thead>
+          <tr>
+            <th>Nombre de la Categoría</th>
+            <th style="width: 150px;">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cat of categorias(); track cat.id) {
+            <tr>
+              @if (editingId() === cat.id) {
+                <td>
+                  <input 
+                    type="text" 
+                    class="form-input" 
+                    [value]="editNombre()" 
+                    (input)="editNombre.set($any($event.target).value)"
+                  />
+                </td>
+                <td class="action-buttons-cell">
+                  <button class="btn-icon" (click)="saveEditCategoria(cat.id)" title="Guardar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-success);">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  </button>
+                  <button class="btn-icon" (click)="cancelEdit()" title="Cancelar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-error);">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                  </button>
+                </td>
+              } @else {
+                <td style="font-weight: 600;">{{ cat.nombre }}</td>
+                <td class="action-buttons-cell">
+                  <button class="btn-icon" (click)="startEditCat(cat)" title="Editar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <button class="btn-icon btn-icon-danger" (click)="deleteCategoria(cat.id)" title="Eliminar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                    </svg>
+                  </button>
+                </td>
+              }
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="2" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                No se han registrado categorías de empleo en la base de datos.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

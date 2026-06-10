@@ -1,0 +1,157 @@
+<div class="recruiter-dashboard-container">
+  <div class="page-header">
+    <div>
+      <h1>Panel de Reclutamiento</h1>
+      <p class="text-muted">
+        @if (companyName()) {
+          Gestionando vacantes para <strong>{{ companyName() }}</strong>
+        } @else {
+          Administración de ofertas y postulantes
+        }
+      </p>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="card stat-card">
+      <div class="stat-icon icon-offers">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">Mis Ofertas Activas</span>
+        <span class="stat-value">{{ myOffersCount() }}</span>
+      </div>
+    </div>
+
+    <div class="card stat-card">
+      <div class="stat-icon icon-postulations">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">Postulaciones Recibidas</span>
+        <span class="stat-value">{{ totalPostulationsCount() }}</span>
+      </div>
+    </div>
+
+    <div class="card stat-card">
+      <div class="stat-icon icon-success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">Contrataciones</span>
+        <span class="stat-value">{{ hiredCount() }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pipeline ATS -->
+  <div class="pipeline-header" style="margin-top: 24px;">
+    <h2>Embudo de Postulaciones (ATS)</h2>
+    <p class="text-muted" style="font-size: 0.875rem;">Flujo de candidatos activos a través del proceso de selección</p>
+  </div>
+
+  @if (loadingData()) {
+    <div style="display: flex; justify-content: center; padding: 40px;">
+      <span class="spinner"></span>
+    </div>
+  } @else {
+    <div class="pipeline-board">
+      <!-- Column 1: Recibido -->
+      <div class="pipeline-column">
+        <div class="column-header">
+          <span class="column-title">Recibido</span>
+          <span class="column-count">{{ postulationsByPhase('recibido').length }}</span>
+        </div>
+        <div class="column-cards-container">
+          @for (post of postulationsByPhase('recibido'); track post.id) {
+            <div class="pipeline-card">
+              <span class="card-candidate-name">{{ post.candidato?.nombre }} {{ post.candidato?.apellido }}</span>
+              <span class="card-job-title">{{ post.oferta?.titulo }}</span>
+              <span class="card-date">{{ post.fecha | date:'mediumDate' }}</span>
+              <div class="card-actions">
+                <button class="btn-action-phase" (click)="movePhase(post.id, 'entrevista')">Entrevista &rarr;</button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-column-placeholder">Sin postulantes</div>
+          }
+        </div>
+      </div>
+
+      <!-- Column 2: Entrevista -->
+      <div class="pipeline-column">
+        <div class="column-header">
+          <span class="column-title">Entrevista</span>
+          <span class="column-count">{{ postulationsByPhase('entrevista').length }}</span>
+        </div>
+        <div class="column-cards-container">
+          @for (post of postulationsByPhase('entrevista'); track post.id) {
+            <div class="pipeline-card">
+              <span class="card-candidate-name">{{ post.candidato?.nombre }} {{ post.candidato?.apellido }}</span>
+              <span class="card-job-title">{{ post.oferta?.titulo }}</span>
+              <span class="card-date">{{ post.fecha | date:'mediumDate' }}</span>
+              <div class="card-actions">
+                <button class="btn-action-phase" (click)="movePhase(post.id, 'recibido')">&larr;</button>
+                <button class="btn-action-phase" (click)="movePhase(post.id, 'evaluacion')">Evaluar &rarr;</button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-column-placeholder">Sin postulantes</div>
+          }
+        </div>
+      </div>
+
+      <!-- Column 3: Evaluación -->
+      <div class="pipeline-column">
+        <div class="column-header">
+          <span class="column-title">Evaluación</span>
+          <span class="column-count">{{ postulationsByPhase('evaluacion').length }}</span>
+        </div>
+        <div class="column-cards-container">
+          @for (post of postulationsByPhase('evaluacion'); track post.id) {
+            <div class="pipeline-card">
+              <span class="card-candidate-name">{{ post.candidato?.nombre }} {{ post.candidato?.apellido }}</span>
+              <span class="card-job-title">{{ post.oferta?.titulo }}</span>
+              <span class="card-date">{{ post.fecha | date:'mediumDate' }}</span>
+              <div class="card-actions">
+                <button class="btn-action-phase" (click)="movePhase(post.id, 'entrevista')">&larr;</button>
+                <button class="btn-action-phase" (click)="movePhase(post.id, 'contratado')" style="background-color: var(--color-success); color: white;">Contratar &rarr;</button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-column-placeholder">Sin postulantes</div>
+          }
+        </div>
+      </div>
+
+      <!-- Column 4: Contratado -->
+      <div class="pipeline-column column-hired">
+        <div class="column-header">
+          <span class="column-title">Contratado</span>
+          <span class="column-count">{{ postulationsByPhase('contratado').length }}</span>
+        </div>
+        <div class="column-cards-container">
+          @for (post of postulationsByPhase('contratado'); track post.id) {
+            <div class="pipeline-card card-hired-item">
+              <span class="card-candidate-name">{{ post.candidato?.nombre }} {{ post.candidato?.apellido }}</span>
+              <span class="card-job-title">{{ post.oferta?.titulo }}</span>
+              <span class="card-date">{{ post.fecha | date:'mediumDate' }}</span>
+              <div class="card-actions">
+                <button class="btn-action-phase" (click)="movePhase(post.id, 'evaluacion')">&larr; Deshacer</button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-column-placeholder">Sin contrataciones</div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

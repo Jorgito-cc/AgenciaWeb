@@ -1,0 +1,191 @@
+<div class="info-page-container">
+  
+  <!-- ================= SECCIÓN: EMPLEOS ================= -->
+  @if (section() === 'empleos') {
+    <section class="section-jobs">
+      <div class="section-hero">
+        <h1 class="info-title">Ofertas de Empleo Disponibles</h1>
+        <p class="info-subtitle">Encuentra y postúlate a puestos activos que encajen con tu perfil profesional.</p>
+        
+        <!-- Search bar inside the jobs page -->
+        <div class="jobs-search-bar">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input 
+            type="text" 
+            placeholder="Buscar por puesto, empresa, ubicación o tecnología..." 
+            [value]="jobFilter()"
+            (input)="onJobSearch($event)"
+            class="jobs-search-input"
+          />
+        </div>
+      </div>
+
+      <div class="jobs-list">
+        @if (getFilteredJobs().length > 0) {
+          <div class="jobs-grid">
+            @for (job of getFilteredJobs(); track job.id) {
+              <div class="job-card">
+                <div class="job-card-header">
+                  <span class="job-badge">{{ job.type }}</span>
+                  <span class="job-category">{{ job.category }}</span>
+                </div>
+                <h3 class="job-title">{{ job.title }}</h3>
+                <p class="job-company">{{ job.company }}</p>
+                <div class="job-meta">
+                  <span class="job-meta-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="meta-icon">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    {{ job.location }}
+                  </span>
+                  <span class="job-meta-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="meta-icon">
+                      <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+                      <line x1="12" y1="18" x2="12" y2="18.01"></line>
+                    </svg>
+                    {{ job.salary }}
+                  </span>
+                </div>
+                <button class="btn-apply" (click)="applyToJob(job.title)">Postularse ahora</button>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="no-results">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="no-results-icon">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="8" y1="12" x2="16" y2="12"></line>
+            </svg>
+            <p>No se encontraron vacantes con los criterios ingresados.</p>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ================= SECCIÓN: EMPRESAS ================= -->
+  @if (section() === 'empresas') {
+    <section class="section-companies">
+      <div class="section-hero">
+        <h1 class="info-title">Empresas Aliadas</h1>
+        <p class="info-subtitle">Conoce las organizaciones que confían en nosotros para encontrar y contratar talento destacado.</p>
+      </div>
+
+      <div class="companies-grid">
+        @for (comp of companies(); track comp.id) {
+          <div class="company-card">
+            <div class="company-logo-badge" [style.background-color]="comp.bg" [style.color]="comp.color">
+              {{ comp.letter }}
+            </div>
+            <h3 class="company-name">{{ comp.name }}</h3>
+            <span class="company-sector">{{ comp.sector }}</span>
+            <p class="company-desc">{{ comp.desc }}</p>
+            <div class="company-card-footer">
+              <span class="company-jobs-count">{{ comp.jobsCount }} vacantes activas</span>
+              <a routerLink="/empleos" class="btn-view-jobs">Ver empleos</a>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ================= SECCIÓN: RECURSOS ================= -->
+  @if (section() === 'recursos') {
+    <section class="section-resources">
+      <div class="section-hero">
+        <h1 class="info-title">Centro de Recursos</h1>
+        <p class="info-subtitle">Artículos redactados por asesores de talento para ayudarte a triunfar en procesos de selección.</p>
+      </div>
+
+      <div class="resources-grid">
+        @for (res of resources(); track res.id) {
+          <article class="resource-card">
+            <span class="resource-tag">{{ res.tag }}</span>
+            <h3 class="resource-title">{{ res.title }}</h3>
+            <p class="resource-desc">{{ res.desc }}</p>
+            <div class="resource-footer">
+              <span class="resource-time">Lectura: {{ res.readTime }}</span>
+              <a href="#" class="resource-link" (click)="$event.preventDefault(); applyToJob('Descarga de Guía')">
+                Leer artículo
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="arrow-icon">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                  <polyline points="12 5 19 12 12 19"></polyline>
+                </svg>
+              </a>
+            </div>
+          </article>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- ================= SECCIÓN: SOBRE NOSOTROS ================= -->
+  @if (section() === 'sobre-nosotros') {
+    <section class="section-about">
+      <div class="about-hero">
+        <h1 class="info-title">Sobre Nosotros</h1>
+        <p class="info-subtitle">Transformamos el reclutamiento laboral mediante tecnología inteligente y centrada en las personas.</p>
+      </div>
+
+      <div class="about-narrative">
+        <div class="about-text-content">
+          <h2>Conectando Talento y Futuro</h2>
+          <p>
+            **AgenciaEmpleo** nació como un proyecto integrador diseñado para simplificar el complejo mercado laboral. 
+            Nuestra plataforma provee soluciones ágiles tanto para profesionales que buscan proyectar sus carreras, 
+            como para reclutadores que buscan formar equipos de alto rendimiento de manera ágil y segura.
+          </p>
+          <p>
+            A través de nuestra arquitectura moderna, que incorpora biometría facial segura y herramientas de gestión
+            de pipelines de selección (ATS), logramos optimizar la experiencia de contratación, reduciendo tiempos de 
+            búsqueda y garantizando la autenticidad e integridad de la información.
+          </p>
+        </div>
+      </div>
+
+      <div class="about-pillars">
+        <!-- Misión -->
+        <div class="pillar-card">
+          <div class="pillar-icon-wrapper mission">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="6"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+            </svg>
+          </div>
+          <h3>Nuestra Misión</h3>
+          <p>Facilitar la inserción laboral y el crecimiento de empresas mediante una plataforma ágil, inclusiva y automatizada.</p>
+        </div>
+
+        <!-- Visión -->
+        <div class="pillar-card">
+          <div class="pillar-icon-wrapper vision">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </div>
+          <h3>Nuestra Visión</h3>
+          <p>Consolidarnos como la red de empleo y selección inteligente líder de la región, destacando por efectividad e innovación.</p>
+        </div>
+
+        <!-- Valores -->
+        <div class="pillar-card">
+          <div class="pillar-icon-wrapper values">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </div>
+          <h3>Valores Core</h3>
+          <p>Impulsamos la transparencia, la innovación continua, el compromiso humano y la seguridad de la información.</p>
+        </div>
+      </div>
+    </section>
+  }
+
+</div>

@@ -1,0 +1,214 @@
+<div class="postulaciones-container">
+  <div class="page-header">
+    <h1>Candidatos Postulados</h1>
+    <p class="text-muted">Revisa los candidatos que han aplicado a tus ofertas de trabajo</p>
+  </div>
+
+  <!-- Filter search box -->
+  <div class="card table-header-actions">
+    <div class="search-filter-box">
+      <input 
+        type="text" 
+        class="form-input" 
+        placeholder="Buscar por candidato u oferta..."
+        [value]="searchTerm()"
+        (input)="onSearchChange($event)"
+      />
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  @if (loadingPostulations()) {
+    <div style="display: flex; justify-content: center; padding: 40px;">
+      <span class="spinner"></span>
+    </div>
+  } @else {
+    <!-- Table list -->
+    <div class="table-container">
+      <table class="responsive-table">
+        <thead>
+          <tr>
+            <th>Candidato</th>
+            <th>Email del Candidato</th>
+            <th>Oferta Aplicada</th>
+            <th>Fecha</th>
+            <th>Fase Actual</th>
+            <th>Herramientas de IA / Detalles</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (post of filteredPostulations(); track post.id) {
+            <tr>
+              <td style="font-weight: 600;">{{ post.candidato?.nombre }} {{ post.candidato?.apellido }}</td>
+              <td>{{ post.candidato?.email }}</td>
+              <td>{{ post.oferta?.titulo }}</td>
+              <td>{{ post.fecha | date:'mediumDate' }}</td>
+              <td>
+                <span class="badge badge-info">{{ post.fase_alcanzada || 'recibido' | uppercase }}</span>
+              </td>
+              <td class="action-buttons-cell">
+                <button 
+                  class="btn btn-secondary" 
+                  style="padding: 6px 12px; font-size: 0.78rem;"
+                  (click)="openDetailModal(post)">
+                  Ver Perfil
+                </button>
+                <button 
+                  class="btn btn-primary" 
+                  style="padding: 6px 12px; font-size: 0.78rem; background-color: var(--secondary-color);"
+                  (click)="predictMatch(post.id)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 13px; height: 13px;">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/>
+                  </svg>
+                  Predecir Match
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                No se han registrado postulantes para tus vacantes.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- MODAL 1: Candidate Profile Details -->
+  @if (showDetailModal()) {
+    <div class="modal-overlay">
+      <div class="modal-content" style="max-width: 550px;">
+        <div class="modal-header">
+          <h3>Perfil del Candidato</h3>
+          <button class="close-modal-btn" (click)="closeDetailModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="modal-body" style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 20px;">
+            <div class="user-avatar-circle" style="width: 64px; height: 64px; font-size: 1.5rem; margin: 0 auto 12px auto; background-color: var(--primary-color);">
+              {{ selectedPostulation()?.candidato?.nombre[0] }}{{ selectedPostulation()?.candidato?.apellido[0] }}
+            </div>
+            <h2 style="font-size: 1.25rem;">{{ selectedPostulation()?.candidato?.nombre }} {{ selectedPostulation()?.candidato?.apellido }}</h2>
+            <p class="text-muted" style="font-size: 0.875rem;">{{ selectedPostulation()?.candidato?.email }}</p>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 0.875rem;">
+            <div>
+              <span class="text-muted" style="display: block; font-weight: 500;">Nivel Educativo</span>
+              <strong style="color: var(--dark-color);">{{ selectedPostulation()?.candidato?.nivel_educativo || 'No especificado' | titlecase }}</strong>
+            </div>
+            <div>
+              <span class="text-muted" style="display: block; font-weight: 500;">Nacionalidad</span>
+              <strong style="color: var(--dark-color);">{{ selectedPostulation()?.candidato?.nacionalidad || 'No especificada' | titlecase }}</strong>
+            </div>
+            <div>
+              <span class="text-muted" style="display: block; font-weight: 500;">Sueldo Esperado</span>
+              <strong style="color: var(--dark-color);">
+                {{ selectedPostulation()?.candidato?.sueldo_esperado ? (selectedPostulation()?.candidato?.sueldo_esperado | currency:'USD':'symbol':'1.0-0') : 'No especificado' }}
+              </strong>
+            </div>
+            <div>
+              <span class="text-muted" style="display: block; font-weight: 500;">Modalidad de Interés</span>
+              <strong style="color: var(--dark-color);">{{ selectedPostulation()?.candidato?.modalidad_preferida || 'No especificada' | titlecase }}</strong>
+            </div>
+          </div>
+
+          <!-- Document download from NestJS server -->
+          <div style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+            <span class="text-muted" style="display: block; font-size: 0.875rem; margin-bottom: 8px;">Currículum Vitae (CV)</span>
+            @if (selectedPostulation()?.id_cv) {
+              <a [href]="'http://localhost:3000/files/download/' + selectedPostulation()?.id_cv" target="_blank" class="cv-download-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px; flex-shrink: 0;">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                Descargar Archivo CV (NestJS S3)
+              </a>
+            } @else {
+              <span class="text-muted" style="font-size: 0.875rem; font-style: italic;">No se subió ningún archivo CV para esta postulación</span>
+            }
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeDetailModal()">Cerrar Perfil</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- MODAL 2: Random Forest Match Prediction -->
+  @if (showPredictionModal()) {
+    <div class="modal-overlay">
+      <div class="modal-content" style="max-width: 440px;">
+        <div class="modal-header">
+          <h3>Predicción de Match (Random Forest)</h3>
+          <button class="close-modal-btn" (click)="closePredictionModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          @if (loadingPrediction()) {
+            <div class="prediction-panel">
+              <span class="spinner" style="width: 40px; height: 40px; border-width: 4px;"></span>
+              <p class="text-muted" style="font-size: 0.875rem; font-weight: 500;">
+                Calculando predicción analizando diferencias salariales, experiencia, habilidades y nivel educativo...
+              </p>
+            </div>
+          } @else {
+            <div class="prediction-panel">
+              <div class="radial-progress-container">
+                <svg class="radial-progress-svg">
+                  <!-- Background circle -->
+                  <circle class="progress-bg-circle" cx="80" cy="80" r="70"></circle>
+                  <!-- Filled progress circle -->
+                  <circle 
+                    class="progress-bar-circle" 
+                    [class.match-high]="matchScore() >= 70"
+                    [class.match-medium]="matchScore() >= 40 && matchScore() < 70"
+                    [class.match-low]="matchScore() < 40"
+                    cx="80" 
+                    cy="80" 
+                    r="70"
+                    [attr.stroke-dasharray]="circumference"
+                    [attr.stroke-dashoffset]="dashoffset()">
+                  </circle>
+                </svg>
+                
+                <div class="percentage-text-box">
+                  <span class="percentage-val">{{ matchScore() }}%</span>
+                  <span class="percentage-label">Match</span>
+                </div>
+              </div>
+
+              <div>
+                <span class="prediction-badge"
+                  [class.badge-high]="matchScore() >= 70"
+                  [class.badge-medium]="matchScore() >= 40 && matchScore() < 70"
+                  [class.badge-low]="matchScore() < 40">
+                  {{ matchRecommendation() }}
+                </span>
+                
+                <p class="text-muted" style="font-size: 0.85rem; margin-top: 14px; line-height: 1.5; padding: 0 10px;">
+                  El modelo Random Forest del microservicio de IA estima una compatibilidad del {{ matchScore() }}% para esta vacante, basándose en la brecha de sueldo, la experiencia previa del candidato y su nivel académico.
+                </p>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" style="width: 100%;" (click)="closePredictionModal()">Cerrar Predicción</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

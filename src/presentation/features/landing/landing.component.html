@@ -1,0 +1,141 @@
+<div class="landing-container">
+  <!-- Hero Section -->
+  <main class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">
+        Tu próximo <span class="title-highlight">empleo</span><br>está aquí
+      </h1>
+      <p class="hero-subtitle">
+        Conectamos talento con oportunidades. Encuentra el trabajo ideal o el candidato perfecto.
+      </p>
+
+      <!-- Search Bar -->
+      <form class="search-bar" (submit)="onSearch($event)">
+        <div class="search-input-group">
+          <!-- Magnifying Glass Icon -->
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input 
+            type="text" 
+            placeholder="Puesto, palabra clave o empresa" 
+            [value]="searchKeyword()" 
+            (input)="onKeywordChange($event)"
+            class="search-input"
+          >
+        </div>
+        
+        <div class="input-separator"></div>
+        
+        <div class="search-input-group">
+          <!-- Map Pin Icon -->
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          <input 
+            type="text" 
+            placeholder="Ubicación" 
+            [value]="searchLocation()" 
+            (input)="onLocationChange($event)"
+            class="search-input"
+          >
+        </div>
+
+        <button type="submit" class="btn-search">
+          <span>Buscar empleos</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Illustration Column -->
+    <div class="hero-illustration">
+      <div class="illustration-backdrop"></div>
+      <img src="/hero.png" alt="Conectando Talento" class="illustration-img">
+    </div>
+  </main>
+
+  <!-- Categories Section -->
+  <section class="categories-section">
+    <div class="section-header">
+      <h2 class="section-title">Explora por categoría</h2>
+      <a href="#" class="view-all-link" (click)="onCategoryClick('Todas las categorías')">Ver todas</a>
+    </div>
+
+    <div class="categories-grid">
+      <!-- 1. Tecnología -->
+      <div class="category-card" (click)="onCategoryClick('Tecnología')">
+        <div class="category-icon-wrapper tech">
+          <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+        </div>
+        <span class="category-name">Tecnología</span>
+      </div>
+
+      <!-- 2. Administración -->
+      <div class="category-card" (click)="onCategoryClick('Administración')">
+        <div class="category-icon-wrapper admin">
+          <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <span class="category-name">Administración</span>
+      </div>
+
+      <!-- 3. Ventas -->
+      <div class="category-card" (click)="onCategoryClick('Ventas')">
+        <div class="category-icon-wrapper sales">
+          <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+        </div>
+        <span class="category-name">Ventas</span>
+      </div>
+
+      <!-- 4. Marketing -->
+      <div class="category-card" (click)="onCategoryClick('Marketing')">
+        <div class="category-icon-wrapper marketing">
+          <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+            <path d="M2 2l7.5 1.5"></path>
+            <path d="M14 14l3 3"></path>
+          </svg>
+        </div>
+        <span class="category-name">Marketing</span>
+      </div>
+
+      <!-- 5. Atención al cliente -->
+      <div class="category-card" (click)="onCategoryClick('Atención al cliente')">
+        <div class="category-icon-wrapper customer">
+          <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 18v-6a9 9 0 0 1 18 0v6"></path>
+            <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path>
+          </svg>
+        </div>
+        <span class="category-name">Atención al cliente</span>
+      </div>
+
+      <!-- 6. Más categorías -->
+      <div class="category-card" (click)="onCategoryClick('Más categorías')">
+        <div class="category-icon-wrapper more">
+          <svg class="category-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="1"></circle>
+            <circle cx="19" cy="12" r="1"></circle>
+            <circle cx="5" cy="12" r="1"></circle>
+          </svg>
+        </div>
+        <span class="category-name">Más categorías</span>
+      </div>
+    </div>
+  </section>
+</div>

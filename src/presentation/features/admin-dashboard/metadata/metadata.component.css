@@ -1,0 +1,85 @@
+.metadata-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tabs-bar {
+  display: flex;
+  border-bottom: 2px solid var(--border-color);
+  gap: 8px;
+}
+
+.tab-nav-btn {
+  background: none;
+  border: none;
+  font-family: var(--font-family);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 12px 20px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all var(--transition-fast);
+}
+
+.tab-nav-btn:hover {
+  color: var(--primary-color);
+}
+
+.tab-nav-btn.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.meta-content-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inline-form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.form-group-inline {
+  flex-grow: 1;
+  min-width: 200px;
+}
+
+.btn-icon {
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: white;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+  transition: all var(--transition-fast);
+}
+
+.btn-icon:hover {
+  background-color: #f1f5f9;
+}
+
+.btn-icon-danger:hover {
+  background-color: var(--color-error-bg);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: var(--color-error);
+}
+
+.btn-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.action-buttons-cell {
+  display: flex;
+  gap: 8px;
+}

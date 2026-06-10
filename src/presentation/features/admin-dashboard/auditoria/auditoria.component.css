@@ -1,0 +1,42 @@
+.auditoria-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.table-header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.search-filter-box {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.user-id-cell {
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  cursor: help;
+}
+
+.details-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.audit-footer-info {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 0;
+  font-size: 0.85rem;
+}

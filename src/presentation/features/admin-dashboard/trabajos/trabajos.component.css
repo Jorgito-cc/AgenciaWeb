@@ -1,0 +1,56 @@
+.trabajos-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.meta-content-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.inline-form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.form-group-inline {
+  flex-grow: 1;
+  min-width: 200px;
+}
+
+.action-buttons-cell {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon {
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  background: white;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-main);
+  transition: all var(--transition-fast);
+}
+
+.btn-icon:hover {
+  background-color: #f1f5f9;
+}
+
+.btn-icon-danger:hover {
+  background-color: var(--color-error-bg);
+  border-color: rgba(239, 68, 68, 0.2);
+  color: var(--color-error);
+}
+
+.btn-icon svg {
+  width: 16px;
+  height: 16px;
+}

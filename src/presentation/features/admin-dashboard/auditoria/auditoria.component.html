@@ -1,0 +1,87 @@
+<div class="auditoria-container">
+  <div class="page-header">
+    <div>
+      <h1>Auditoría Global de Documentos</h1>
+      <p class="text-muted">Supervisión centralizada de todas las operaciones de documentos (NestJS)</p>
+    </div>
+  </div>
+
+  <!-- Actions Bar -->
+  <div class="card table-header-actions">
+    <div class="search-filter-box">
+      <label class="form-label" for="audit-limite" style="margin-bottom: 0; align-self: center; white-space: nowrap;">Mostrar:</label>
+      <select 
+        id="audit-limite" 
+        class="form-input" 
+        style="width: 160px;"
+        [value]="limite()"
+        (change)="onLimiteChange($event)">
+        <option [value]="20">Últimos 20</option>
+        <option [value]="50">Últimos 50</option>
+        <option [value]="100">Últimos 100</option>
+        <option [value]="200">Últimos 200</option>
+      </select>
+    </div>
+    
+    <button class="btn btn-secondary" (click)="refreshLogs()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+        <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+      </svg>
+      Actualizar
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  @if (loadingData()) {
+    <div style="display: flex; justify-content: center; padding: 40px;">
+      <span class="spinner"></span>
+    </div>
+  } @else {
+    <!-- Table -->
+    <div class="table-container">
+      <table class="responsive-table">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Acción</th>
+            <th>Usuario ID</th>
+            <th>Documento</th>
+            <th>Tipo MIME</th>
+            <th>Detalles</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (log of auditoriaLogs(); track log.id) {
+            <tr>
+              <td style="white-space: nowrap; font-size: 0.8rem;">{{ log.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>
+                <span class="badge" [ngClass]="getActionBadgeClass(log.accion)">
+                  {{ log.accion }}
+                </span>
+              </td>
+              <td>
+                <span class="user-id-cell" title="{{ log.usuario_id }}">{{ log.usuario_id | slice:0:8 }}...</span>
+              </td>
+              <td style="font-weight: 600;">{{ log.documento?.nombre_original || 'N/A' }}</td>
+              <td>
+                <span class="badge badge-info" style="font-size: 0.7rem;">{{ log.documento?.mime_type || '-' }}</span>
+              </td>
+              <td class="details-cell">{{ formatDetails(log.detalles) }}</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                No se encontraron registros de auditoría. Verifica que el microservicio NestJS esté activo.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Total count -->
+    <div class="audit-footer-info">
+      <span class="text-muted">{{ auditoriaLogs().length }} registros mostrados</span>
+    </div>
+  }
+</div>

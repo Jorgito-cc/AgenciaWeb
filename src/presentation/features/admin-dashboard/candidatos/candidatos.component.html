@@ -1,0 +1,197 @@
+<div class="candidatos-container">
+  <div class="page-header">
+    <h1>Gestión de Candidatos</h1>
+    <p class="text-muted">Administra los perfiles de candidatos registrados en la plataforma</p>
+  </div>
+
+  <!-- Actions Bar -->
+  <div class="card table-header-actions">
+    <div class="search-filter-box">
+      <input 
+        type="text" 
+        class="form-input" 
+        placeholder="Buscar por nombre, email o nacionalidad..."
+        [value]="searchTerm()"
+        (input)="onSearchChange($event)"
+      />
+    </div>
+    
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Nuevo Candidato
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  @if (loadingData()) {
+    <div style="display: flex; justify-content: center; padding: 40px;">
+      <span class="spinner"></span>
+    </div>
+  } @else {
+    <!-- Table -->
+    <div class="table-container">
+      <table class="responsive-table">
+        <thead>
+          <tr>
+            <th>Nombre Completo</th>
+            <th>Email</th>
+            <th>Modalidad</th>
+            <th>Sueldo Esperado</th>
+            <th>Nivel Educativo</th>
+            <th>Cluster</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (cand of filteredCandidatos(); track cand.id) {
+            <tr>
+              <td style="font-weight: 600;">{{ cand.nombre }} {{ cand.apellido }}</td>
+              <td>{{ cand.email }}</td>
+              <td>
+                @if (cand.modalidad_preferida) {
+                  <span class="badge badge-info">{{ cand.modalidad_preferida }}</span>
+                } @else {
+                  <span class="text-muted">-</span>
+                }
+              </td>
+              <td>{{ formatCurrency(cand.sueldo_esperado) }}</td>
+              <td>{{ cand.nivel_educativo || '-' }}</td>
+              <td>
+                @if (cand.cluster_id !== null && cand.cluster_id !== undefined) {
+                  <span class="badge badge-warning">Cluster {{ cand.cluster_id }}</span>
+                } @else {
+                  <span class="text-muted">Sin asignar</span>
+                }
+              </td>
+              <td>
+                <span class="badge" [class.badge-success]="cand.estado === 'ACTIVO'" [class.badge-danger]="cand.estado !== 'ACTIVO'">
+                  {{ cand.estado || 'INACTIVO' }}
+                </span>
+              </td>
+              <td class="action-buttons-cell">
+                <button class="btn-icon" (click)="openEditModal(cand)" title="Editar candidato">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button class="btn-icon btn-icon-danger" (click)="deleteCandidato(cand.id)" title="Eliminar candidato">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+                  </svg>
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                No se encontraron candidatos registrados.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- Add/Edit Modal -->
+  @if (showModal()) {
+    <div class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>{{ isEditing() ? 'Modificar Candidato' : 'Nuevo Candidato' }}</h3>
+          <button class="close-modal-btn" (click)="closeModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        
+        <form (submit)="onModalSubmit($event)">
+          <div class="modal-body">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label class="form-label" for="cand-nombre">Nombre</label>
+                <input type="text" id="cand-nombre" class="form-input" required [value]="formNombre()" (input)="formNombre.set($any($event.target).value)"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cand-apellido">Apellido</label>
+                <input type="text" id="cand-apellido" class="form-input" required [value]="formApellido()" (input)="formApellido.set($any($event.target).value)"/>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="cand-email">Correo Electrónico</label>
+              <input type="email" id="cand-email" class="form-input" required [disabled]="isEditing()" [value]="formEmail()" (input)="formEmail.set($any($event.target).value)"/>
+            </div>
+
+            @if (!isEditing()) {
+              <div class="form-group">
+                <label class="form-label" for="cand-password">Contraseña</label>
+                <input type="password" id="cand-password" class="form-input" required [value]="formPassword()" (input)="formPassword.set($any($event.target).value)"/>
+              </div>
+            }
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label class="form-label" for="cand-sueldo">Sueldo Esperado</label>
+                <input type="number" id="cand-sueldo" class="form-input" step="0.01" [value]="formSueldoEsperado()" (input)="formSueldoEsperado.set($any($event.target).valueAsNumber || 0)"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cand-modalidad">Modalidad Preferida</label>
+                <select id="cand-modalidad" class="form-input" [value]="formModalidad()" (change)="formModalidad.set($any($event.target).value)">
+                  <option value="">Sin preferencia</option>
+                  <option value="Remoto">Remoto</option>
+                  <option value="Presencial">Presencial</option>
+                  <option value="Híbrido">Híbrido</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+              <div class="form-group">
+                <label class="form-label" for="cand-educacion">Nivel Educativo</label>
+                <select id="cand-educacion" class="form-input" [value]="formNivelEducativo()" (change)="formNivelEducativo.set($any($event.target).value)">
+                  <option value="">Seleccionar</option>
+                  <option value="Bachiller">Bachiller</option>
+                  <option value="Técnico">Técnico</option>
+                  <option value="Tecnólogo">Tecnólogo</option>
+                  <option value="Universitario">Universitario</option>
+                  <option value="Especialización">Especialización</option>
+                  <option value="Maestría">Maestría</option>
+                  <option value="Doctorado">Doctorado</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="cand-nacionalidad">Nacionalidad</label>
+                <input type="text" id="cand-nacionalidad" class="form-input" placeholder="Ej: Colombiana" [value]="formNacionalidad()" (input)="formNacionalidad.set($any($event.target).value)"/>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="cand-estado">Estado</label>
+              <select id="cand-estado" class="form-input" required [value]="formEstado()" (change)="formEstado.set($any($event.target).value)">
+                <option value="ACTIVO">Activo</option>
+                <option value="INACTIVO">Inactivo</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="submittingForm()">
+              @if (submittingForm()) {
+                <span class="spinner" style="width: 16px; height: 16px; border-width: 2px; border-top-color: white;"></span>
+                Guardando...
+              } @else {
+                Guardar
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>
