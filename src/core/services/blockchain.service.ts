@@ -22,8 +22,7 @@ export interface ValidationResponse {
 })
 export class BlockchainService {
   private readonly http = inject(HttpClient);
-  // Default to Node 1 port 3001 to avoid conflict with documents microservice on 3000
-  private readonly BLOCKCHAIN_URL = 'http://localhost:3001/api/blockchain';
+  private readonly BLOCKCHAIN_URL = 'https://blockchain-agencia-production.up.railway.app/api/blockchain';
 
   getChain(): Observable<Block[]> {
     return this.http.get<Block[]>(this.BLOCKCHAIN_URL);
