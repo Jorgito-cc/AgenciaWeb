@@ -6,82 +6,186 @@
     </div>
   </div>
 
+  <!-- Tab navigation -->
+  <div class="tab-navigation" style="display: flex; margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; gap: 10px;">
+    <button 
+      class="tab-btn" 
+      style="padding: 12px 20px; border: none; background: transparent; cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent; font-size: 0.95rem; transition: all 0.2s;"
+      [style.border-bottom-color]="selectedTab() === 'local' ? '#3b82f6' : 'transparent'"
+      [style.color]="selectedTab() === 'local' ? '#3b82f6' : '#64748b'"
+      (click)="changeTab('local')">
+      Auditoría Local (Base de Datos)
+    </button>
+    <button 
+      class="tab-btn" 
+      style="padding: 12px 20px; border: none; background: transparent; cursor: pointer; font-weight: 600; border-bottom: 3px solid transparent; font-size: 0.95rem; transition: all 0.2s;"
+      [style.border-bottom-color]="selectedTab() === 'blockchain' ? '#3b82f6' : 'transparent'"
+      [style.color]="selectedTab() === 'blockchain' ? '#3b82f6' : '#64748b'"
+      (click)="changeTab('blockchain')">
+      Blockchain Ledger (Ciberseguridad Inmutable)
+    </button>
+  </div>
+
   <!-- Actions Bar -->
-  <div class="card table-header-actions">
-    <div class="search-filter-box">
-      <label class="form-label" for="audit-limite" style="margin-bottom: 0; align-self: center; white-space: nowrap;">Mostrar:</label>
-      <select 
-        id="audit-limite" 
-        class="form-input" 
-        style="width: 160px;"
-        [value]="limite()"
-        (change)="onLimiteChange($event)">
-        <option [value]="20">Últimos 20</option>
-        <option [value]="50">Últimos 50</option>
-        <option [value]="100">Últimos 100</option>
-        <option [value]="200">Últimos 200</option>
-      </select>
+  <div class="card table-header-actions" style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+    <div class="search-filter-box" style="display: flex; align-items: center; gap: 10px;">
+      @if (selectedTab() === 'local') {
+        <label class="form-label" for="audit-limite" style="margin-bottom: 0; align-self: center; white-space: nowrap; font-size: 0.9rem;">Mostrar:</label>
+        <select 
+          id="audit-limite" 
+          class="form-input" 
+          style="width: 160px; padding: 6px 12px; border-radius: 6px; border: 1px solid #cbd5e1;"
+          [value]="limite()"
+          (change)="onLimiteChange($event)">
+          <option [value]="20">Últimos 20</option>
+          <option [value]="50">Últimos 50</option>
+          <option [value]="100">Últimos 100</option>
+          <option [value]="200">Últimos 200</option>
+        </select>
+      } @else {
+        <!-- Blockchain Stats -->
+        <div style="display: flex; gap: 15px; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 6px; background: #f0fdf4; color: #16a34a; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.85rem;" 
+               [style.background]="blockchainValid() ? '#f0fdf4' : '#fef2f2'" 
+               [style.color]="blockchainValid() ? '#16a34a' : '#dc2626'">
+            <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%;" 
+                  [style.background]="blockchainValid() ? '#16a34a' : '#dc2626'"></span>
+            {{ blockchainValid() ? 'Integridad: Sello Válido' : 'Integridad: Alerta Compromiso' }}
+          </div>
+          <span style="font-size: 0.9rem; color: #64748b;">Bloques Minados: <strong>{{ blockchainLength() }}</strong></span>
+        </div>
+      }
     </div>
     
-    <button class="btn btn-secondary" (click)="refreshLogs()">
+    <button class="btn btn-secondary" (click)="refreshLogs()" style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; border-radius: 6px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer;">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;">
         <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
       </svg>
-      Actualizar
+      Sincronizar
     </button>
   </div>
 
   <!-- Loading State -->
   @if (loadingData()) {
     <div style="display: flex; justify-content: center; padding: 40px;">
-      <span class="spinner"></span>
+      <span class="spinner" style="border: 4px solid rgba(0, 0, 0, 0.1); width: 36px; height: 36px; border-radius: 50%; border-left-color: #3b82f6; display: inline-block; animation: spin 1s linear infinite;"></span>
     </div>
   } @else {
-    <!-- Table -->
-    <div class="table-container">
-      <table class="responsive-table">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Acción</th>
-            <th>Usuario ID</th>
-            <th>Documento</th>
-            <th>Tipo MIME</th>
-            <th>Detalles</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (log of auditoriaLogs(); track log.id) {
+    
+    @if (selectedTab() === 'local') {
+      <!-- Local DB logs Table -->
+      <div class="table-container" style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <table class="responsive-table">
+          <thead>
             <tr>
-              <td style="white-space: nowrap; font-size: 0.8rem;">{{ log.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
-              <td>
-                <span class="badge" [ngClass]="getActionBadgeClass(log.accion)">
-                  {{ log.accion }}
-                </span>
-              </td>
-              <td>
-                <span class="user-id-cell" title="{{ log.usuario_id }}">{{ log.usuario_id | slice:0:8 }}...</span>
-              </td>
-              <td style="font-weight: 600;">{{ log.documento?.nombre_original || 'N/A' }}</td>
-              <td>
-                <span class="badge badge-info" style="font-size: 0.7rem;">{{ log.documento?.mime_type || '-' }}</span>
-              </td>
-              <td class="details-cell">{{ formatDetails(log.detalles) }}</td>
+              <th>Fecha</th>
+              <th>Acción</th>
+              <th>Usuario ID</th>
+              <th>Documento</th>
+              <th>Tipo MIME</th>
+              <th>Detalles</th>
             </tr>
-          } @empty {
-            <tr>
-              <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
-                No se encontraron registros de auditoría. Verifica que el microservicio NestJS esté activo.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            @for (log of auditoriaLogs(); track log.id) {
+              <tr>
+                <td style="white-space: nowrap; font-size: 0.8rem;">{{ log.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="getActionBadgeClass(log.accion)">
+                    {{ log.accion }}
+                  </span>
+                </td>
+                <td>
+                  <span class="user-id-cell" title="{{ log.usuario_id }}">{{ log.usuario_id | slice:0:8 }}...</span>
+                </td>
+                <td style="font-weight: 600;">{{ log.documento?.nombre_original || 'N/A' }}</td>
+                <td>
+                  <span class="badge badge-info" style="font-size: 0.7rem;">{{ log.documento?.mime_type || '-' }}</span>
+                </td>
+                <td class="details-cell">{{ formatDetails(log.detalles) }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                  No se encontraron registros de auditoría. Verifica que el microservicio NestJS esté activo.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
 
-    <!-- Total count -->
-    <div class="audit-footer-info">
-      <span class="text-muted">{{ auditoriaLogs().length }} registros mostrados</span>
-    </div>
+      <!-- Total count -->
+      <div class="audit-footer-info" style="margin-top: 15px; font-size: 0.85rem; color: #64748b;">
+        <span class="text-muted">{{ auditoriaLogs().length }} registros mostrados</span>
+      </div>
+    } @else {
+      <!-- Blockchain Ledger Table -->
+      <div class="table-container" style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <table class="responsive-table">
+          <thead>
+            <tr>
+              <th style="width: 80px;">Bloque</th>
+              <th>Timestamp</th>
+              <th>Hash del Bloque</th>
+              <th>Hash Anterior</th>
+              <th>Transacciones</th>
+              <th>Nonce</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (block of blocks(); track block.index) {
+              <tr>
+                <td style="font-weight: 700; text-align: center; color: #3b82f6;">#{{ block.index }}</td>
+                <td style="white-space: nowrap; font-size: 0.8rem;">{{ block.timestamp | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td style="font-family: monospace; font-size: 0.75rem; color: #0f172a;" title="{{ block.hash }}">{{ block.hash | slice:0:16 }}...</td>
+                <td style="font-family: monospace; font-size: 0.75rem; color: #64748b;" title="{{ block.previousHash }}">{{ block.previousHash | slice:0:16 }}...</td>
+                <td>
+                  <div style="display: flex; flex-direction: column; gap: 5px;">
+                    @for (tx of block.transactions; track tx.timestamp) {
+                      <div style="font-size: 0.8rem; background: #f8fafc; padding: 6px; border-radius: 4px; border-left: 3px solid #64748b;">
+                        <div style="display: flex; justify-content: space-between;">
+                          <strong style="color: #475569;">De: {{ tx.sender === 'SYSTEM' ? 'SYSTEM (Verificado)' : (tx.sender | slice:0:8) + '...' }}</strong>
+                          <span style="font-size: 0.7rem; color: #94a3b8;">Hacia: {{ tx.recipient | slice:0:12 }}...</span>
+                        </div>
+                        <div style="margin-top: 2px; color: #334155; font-size: 0.75rem;">
+                          Acción: <strong>{{ tx.data?.accion || tx.data?.action || 'N/A' }}</strong>
+                        </div>
+                        <div style="font-family: monospace; font-size: 0.7rem; color: #64748b; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ formatDetails(tx.data) }}">
+                          Data: {{ formatDetails(tx.data) }}
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </td>
+                <td style="font-family: monospace; font-weight: bold; color: #0f172a; text-align: center;">{{ block.nonce }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                  No se encontraron bloques en el ledger de la Blockchain. Asegúrate de que el nodo esté activo.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Validation Banner -->
+      <div style="margin-top: 15px; padding: 12px 16px; border-radius: 6px; font-size: 0.85rem; font-family: monospace; word-break: break-all;"
+           [style.background]="blockchainValid() ? '#f0fdf4' : '#fef2f2'"
+           [style.color]="blockchainValid() ? '#166534' : '#991b1b'"
+           [style.border]="blockchainValid() ? '1px solid #bbf7d0' : '1px solid #fecaca'">
+        Status: <strong>{{ validationMsg() }}</strong>
+      </div>
+    }
   }
 </div>
+
+<style>
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+</style>
+

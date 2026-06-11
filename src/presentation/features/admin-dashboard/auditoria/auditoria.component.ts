@@ -1,25 +1,32 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule, DatePipe, SlicePipe } from '@angular/common';
 import { GraphQLService } from '../../../../core/services/graphql.service';
 import { ToastService } from '../../../../core/services/toast.service';
+import { BlockchainService, Block } from '../../../../core/services/blockchain.service';
 
 @Component({
   selector: 'app-admin-auditoria',
   standalone: true,
-  imports: [CommonModule, DatePipe],
+  imports: [CommonModule, DatePipe, SlicePipe],
   templateUrl: './auditoria.component.html',
   styleUrl: './auditoria.component.css'
 })
 export class AdminAuditoriaComponent implements OnInit {
   private readonly gqlService = inject(GraphQLService);
   private readonly toastService = inject(ToastService);
+  private readonly blockchainService = inject(BlockchainService);
 
   // Data signals
   readonly auditoriaLogs = signal<any[]>([]);
+  readonly blocks = signal<Block[]>([]);
 
   // UI state signals
+  readonly selectedTab = signal<'local' | 'blockchain'>('local');
   readonly loadingData = signal<boolean>(false);
   readonly limite = signal<number>(50);
+  readonly blockchainValid = signal<boolean>(true);
+  readonly blockchainLength = signal<number>(0);
+  readonly validationMsg = signal<string>('Cargando estado...');
 
   ngOnInit(): void {
     this.loadAuditoria();
@@ -58,14 +65,57 @@ export class AdminAuditoriaComponent implements OnInit {
     });
   }
 
+  loadBlockchain(): void {
+    this.loadingData.set(true);
+    this.blockchainService.getChain().subscribe({
+      next: (chain) => {
+        this.blocks.set(chain);
+        this.blockchainLength.set(chain.length);
+        
+        // Validate integrity
+        this.blockchainService.validateChain().subscribe({
+          next: (val) => {
+            this.blockchainValid.set(val.valid);
+            this.validationMsg.set(val.message);
+            this.loadingData.set(false);
+          },
+          error: () => {
+            this.blockchainValid.set(false);
+            this.validationMsg.set('Fallo al validar la integridad de la cadena.');
+            this.loadingData.set(false);
+          }
+        });
+      },
+      error: (err) => {
+        this.loadingData.set(false);
+        this.toastService.error('Error al conectar con el nodo Blockchain (puerto 3000). Asegúrate de que esté iniciado.');
+      }
+    });
+  }
+
+  changeTab(tab: 'local' | 'blockchain'): void {
+    this.selectedTab.set(tab);
+    if (tab === 'local') {
+      this.loadAuditoria();
+    } else {
+      this.loadBlockchain();
+    }
+  }
+
   onLimiteChange(event: Event): void {
     const val = parseInt((event.target as HTMLSelectElement).value, 10);
     this.limite.set(val);
-    this.loadAuditoria();
+    if (this.selectedTab() === 'local') {
+      this.loadAuditoria();
+    }
   }
 
   refreshLogs(): void {
-    this.loadAuditoria();
+    if (this.selectedTab() === 'local') {
+      this.loadAuditoria();
+    } else {
+      this.loadBlockchain();
+    }
   }
 
   getActionBadgeClass(accion: string): string {
