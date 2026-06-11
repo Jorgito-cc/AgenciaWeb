@@ -120,6 +120,7 @@ export class RecruiterPostulacionesComponent implements OnInit {
   openDetailModal(postulation: any): void {
     this.selectedPostulation.set(postulation);
     this.showDetailModal.set(true);
+    this.predictMatch(postulation.id, false);
   }
 
   closeDetailModal(): void {
@@ -127,8 +128,10 @@ export class RecruiterPostulacionesComponent implements OnInit {
     this.selectedPostulation.set(null);
   }
 
-  predictMatch(postulationId: string): void {
-    this.showPredictionModal.set(true);
+  predictMatch(postulationId: string, showModal = true): void {
+    if (showModal) {
+      this.showPredictionModal.set(true);
+    }
     this.loadingPrediction.set(true);
     this.matchScore.set(0);
 
@@ -143,22 +146,17 @@ export class RecruiterPostulacionesComponent implements OnInit {
         const responseString = res.data?.predecirExitoPostulacion || '';
         
         // Parse the Java map toString response using Regex
-        // Example: "Predicción de Postulación: {success=true, prediction=1, probability=0.85, message=..., error=null}"
         const probMatch = /probability=([\d.]+)/.exec(responseString);
         
         let score = 0;
         if (probMatch) {
           const val = parseFloat(probMatch[1]);
-          // If the backend returns standard 0-1 scale (like 0.85), normalize to 0-100 percentage.
           score = val <= 1.0 ? Math.round(val * 100) : Math.round(val);
         }
 
-        // Clip score between 0 and 100 to avoid visual overflow
         score = Math.max(0, Math.min(100, score));
-
         this.matchScore.set(score);
 
-        // Map recommendation
         if (score >= 70) {
           this.matchRecommendation.set('Compatibilidad Alta - Altamente Recomendado');
         } else if (score >= 40) {
@@ -171,7 +169,9 @@ export class RecruiterPostulacionesComponent implements OnInit {
       },
       error: (err) => {
         this.loadingPrediction.set(false);
-        this.showPredictionModal.set(false);
+        if (showModal) {
+          this.showPredictionModal.set(false);
+        }
         this.toastService.error(err.message || 'Error al conectar con el motor de predicciones');
       }
     });

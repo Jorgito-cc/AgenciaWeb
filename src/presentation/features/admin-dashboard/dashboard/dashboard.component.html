@@ -1,12 +1,33 @@
 <div class="admin-dashboard-container">
-  <div class="page-header">
+  <!-- BI Header -->
+  <div class="page-header header-bi-flex">
     <div>
-      <h1>Panel de Administración</h1>
-      <p class="text-muted">Estadísticas y control inteligente de modelos de IA</p>
+      <h1>Panel de Control BI</h1>
+      <p class="text-muted">Métricas clave e indicadores de rendimiento de reclutamiento (KPIs) en tiempo real</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-secondary" (click)="exportarExcel()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; margin-right: 6px; flex-shrink: 0; color: #10b981;">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Descargar Excel
+      </button>
+      <button class="btn btn-danger" (click)="exportarPDF()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; margin-right: 6px; flex-shrink: 0; color: white;">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Descargar PDF
+      </button>
+      <button class="btn btn-primary" (click)="descargarReporteCSV()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; margin-right: 6px; flex-shrink: 0;">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Descargar CSV
+      </button>
     </div>
   </div>
 
-  <!-- Stats Grid -->
+  <!-- Stats Grid (General Totals) -->
   <div class="stats-grid">
     <div class="card stat-card">
       <div class="stat-icon icon-users">
@@ -15,7 +36,7 @@
         </svg>
       </div>
       <div class="stat-info">
-        <span class="stat-label">Usuarios del Sistema</span>
+        <span class="stat-label">Usuarios</span>
         @if (loadingStats()) {
           <span class="spinner-small"></span>
         } @else {
@@ -31,7 +52,7 @@
         </svg>
       </div>
       <div class="stat-info">
-        <span class="stat-label">Empresas Colaboradoras</span>
+        <span class="stat-label">Empresas</span>
         @if (loadingStats()) {
           <span class="spinner-small"></span>
         } @else {
@@ -47,7 +68,7 @@
         </svg>
       </div>
       <div class="stat-info">
-        <span class="stat-label">Candidatos Registrados</span>
+        <span class="stat-label">Candidatos</span>
         @if (loadingStats()) {
           <span class="spinner-small"></span>
         } @else {
@@ -63,7 +84,7 @@
         </svg>
       </div>
       <div class="stat-info">
-        <span class="stat-label">Ofertas de Trabajo</span>
+        <span class="stat-label">Ofertas</span>
         @if (loadingStats()) {
           <span class="spinner-small"></span>
         } @else {
@@ -79,7 +100,7 @@
         </svg>
       </div>
       <div class="stat-info">
-        <span class="stat-label">Reclutadores Activos</span>
+        <span class="stat-label">Reclutadores</span>
         @if (loadingStats()) {
           <span class="spinner-small"></span>
         } @else {
@@ -87,7 +108,267 @@
         }
       </div>
     </div>
+
+    <div class="card stat-card">
+      <div class="stat-icon icon-postulations">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <span class="stat-label">Postulaciones</span>
+        @if (loadingStats()) {
+          <span class="spinner-small"></span>
+        } @else {
+          <span class="stat-value">{{ totalPostulations() }}</span>
+        }
+      </div>
+    </div>
   </div>
 
+  <!-- BI Section Title -->
+  <h2 class="bi-section-title">Indicadores Clave de Rendimiento (KPIs)</h2>
 
+  <!-- KPIs Grid -->
+  <div class="kpis-grid">
+    <!-- Tasa de Contratación (Placement Rate) -->
+    <div class="card kpi-card">
+      <div class="kpi-circle-container">
+        <div class="kpi-ring" [style.--pct]="placementRate()">
+          <span class="kpi-percentage">{{ placementRate() }}%</span>
+        </div>
+      </div>
+      <div class="kpi-details">
+        <h3>Tasa de Contratación</h3>
+        <p class="text-muted">Porcentaje de postulantes del sistema que logran ser contratados.</p>
+      </div>
+    </div>
+
+    <!-- Comparativa Salarial -->
+    <div class="card kpi-card">
+      <div class="kpi-icon-wrapper salary-icon-bg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="kpi-svg text-primary">
+          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+      </div>
+      <div class="kpi-details">
+        <h3>Comparativa Salarial</h3>
+        <div class="salary-stat">
+          <span class="salary-label">Ofrecido prom:</span>
+          <span class="salary-value">{{ avgOfferedSalary() | number:'1.0-0' }} BOB</span>
+        </div>
+        <div class="salary-stat" style="margin-top: 4px;">
+          <span class="salary-label">Esperado prom:</span>
+          <span class="salary-value">{{ avgExpectedSalary() | number:'1.0-0' }} BOB</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ratio de Selección (Competencia) -->
+    <div class="card kpi-card">
+      <div class="kpi-icon-wrapper ratio-icon-bg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="kpi-svg text-success">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/>
+        </svg>
+      </div>
+      <div class="kpi-details">
+        <h3>Ratio de Selección</h3>
+        <span class="kpi-large-val">{{ candidatesPerOfferRatio() }}</span>
+        <p class="text-muted">Promedio de candidatos postulantes por cada oferta publicada.</p>
+      </div>
+    </div>
+
+    <!-- Modalidad Líder -->
+    <div class="card kpi-card">
+      <div class="kpi-icon-wrapper modality-icon-bg">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="kpi-svg text-warning">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+      <div class="kpi-details">
+        <h3>Modalidad Líder</h3>
+        <span class="kpi-large-val text-capitalize">{{ dominantModality() }}</span>
+        <p class="text-muted">Modalidad de contratación dominante en las ofertas vigentes.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- BI Section Title for Analytical Graphs -->
+  <h2 class="bi-section-title">Visualización Analítica de Datos</h2>
+
+  <!-- Analytical Graphs Grid -->
+  <div class="charts-grid">
+    <!-- Donut/Pie Chart (ATS Selection Funnel) -->
+    <div class="card chart-wrapper">
+      <h3 class="chart-title">Distribución del Proceso (ATS)</h3>
+      <div class="donut-chart-container">
+        <svg viewBox="0 0 42 42" class="donut-svg">
+          <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="var(--border-color)" stroke-width="4.5"></circle>
+          @for (seg of donutSegments(); track seg.phase) {
+            <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" 
+              [attr.stroke]="seg.color" stroke-width="5" 
+              [attr.stroke-dasharray]="seg.dashArray" 
+              [attr.transform]="'rotate(' + seg.rotation + ' 21 21)'"
+              class="donut-segment"
+              (mouseenter)="showChartTooltip($event, seg.phase, seg.count + ' aplicaciones (' + seg.percentage + '%)')"
+              (mouseleave)="hideChartTooltip()">
+            </circle>
+          }
+          <g class="donut-text">
+            <text x="50%" y="47%" class="donut-number">{{ totalPostulations() }}</text>
+            <text x="50%" y="65%" class="donut-label">Total</text>
+          </g>
+        </svg>
+        <div class="donut-legend">
+          @for (seg of donutSegments(); track seg.phase) {
+            <div class="legend-item">
+              <span class="legend-dot" [style.background-color]="seg.color"></span>
+              <span class="legend-text">{{ seg.phase }}:</span>
+              <span class="legend-val">{{ seg.percentage }}%</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Vertical Bar Chart (Average salaries by Modality) -->
+    <div class="card chart-wrapper">
+      <h3 class="chart-title">Sueldo Promedio por Modalidad (BOB)</h3>
+      <div class="bar-chart-container">
+        <svg viewBox="0 0 400 180" class="bar-svg">
+          <!-- Horizontal Grid Lines -->
+          <line x1="30" y1="20" x2="380" y2="20" stroke="var(--border-color)" stroke-dasharray="3,3" stroke-width="0.8"></line>
+          <line x1="30" y1="85" x2="380" y2="85" stroke="var(--border-color)" stroke-dasharray="3,3" stroke-width="0.8"></line>
+          <line x1="30" y1="150" x2="380" y2="150" stroke="var(--border-color)" stroke-width="1.2"></line>
+
+          @for (bar of barChartPoints(); track bar.name) {
+            <rect [attr.x]="bar.x" [attr.y]="bar.y" [attr.width]="bar.width" [attr.height]="bar.height"
+              fill="var(--primary-color)" rx="3" ry="3" class="chart-rect"
+              (mouseenter)="showChartTooltip($event, bar.name, bar.value + ' BOB')"
+              (mouseleave)="hideChartTooltip()">
+            </rect>
+            <text [attr.x]="bar.x + bar.width / 2" y="168" class="chart-axis-label text-capitalize" text-anchor="middle">
+              {{ bar.name }}
+            </text>
+          }
+        </svg>
+      </div>
+    </div>
+
+    <!-- Line/Ray Chart (Trend of Postulations over time) -->
+    <div class="card chart-wrapper">
+      <h3 class="chart-title">Tendencia de Postulaciones</h3>
+      <div class="line-chart-container">
+        <svg viewBox="0 0 400 180" class="line-svg">
+          <defs>
+            <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--primary-color)" stop-opacity="0.25"></stop>
+              <stop offset="100%" stop-color="var(--primary-color)" stop-opacity="0.0"></stop>
+            </linearGradient>
+          </defs>
+          <!-- Horizontal Grid Lines -->
+          <line x1="30" y1="20" x2="380" y2="20" stroke="var(--border-color)" stroke-dasharray="3,3" stroke-width="0.8"></line>
+          <line x1="30" y1="85" x2="380" y2="85" stroke="var(--border-color)" stroke-dasharray="3,3" stroke-width="0.8"></line>
+          <line x1="30" y1="150" x2="380" y2="150" stroke="var(--border-color)" stroke-width="1.2"></line>
+
+          <!-- Area under line path -->
+          @if (lineChartAreaPath()) {
+            <path [attr.d]="lineChartAreaPath()" fill="url(#areaGradient)"></path>
+          }
+
+          <!-- Interpolated line -->
+          @if (lineChartPath()) {
+            <path [attr.d]="lineChartPath()" fill="none" stroke="var(--primary-color)" stroke-width="2.5" class="trend-path"></path>
+          }
+
+          <!-- Circle Markers -->
+          @for (pt of lineChartPoints(); track pt.label) {
+            <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="5" fill="var(--bg-card)" stroke="var(--primary-color)" stroke-width="2.5" class="chart-node"
+              (mouseenter)="showChartTooltip($event, pt.label, pt.value + ' aplicaciones')"
+              (mouseleave)="hideChartTooltip()">
+            </circle>
+            <text [attr.x]="pt.x" y="168" class="chart-axis-label" text-anchor="middle">
+              {{ pt.label }}
+            </text>
+          }
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shared Hover Tooltip -->
+  @if (activeTooltip().show) {
+    <div class="chart-tooltip" [style.left.px]="activeTooltip().x" [style.top.px]="activeTooltip().y">
+      <div class="tooltip-label">{{ activeTooltip().label }}</div>
+      <div class="tooltip-val">{{ activeTooltip().value }}</div>
+    </div>
+  }
+
+  <!-- BI Rows: Funnel Distribution & Recent Applications -->
+  <div class="bi-row-grid">
+    <!-- Embudo ATS -->
+    <div class="card bi-row-card">
+      <h3 class="bi-card-title">Distribución del Embudo ATS</h3>
+      <p class="text-muted mb-4" style="font-size: 0.85rem;">Distribución y porcentajes de candidatos clasificados por cada fase del proceso de selección.</p>
+      
+      <div class="funnel-container">
+        @for (item of phaseStats(); track item.phase) {
+          <div class="funnel-row">
+            <div class="funnel-label">{{ item.phase }}</div>
+            <div class="funnel-bar-wrapper">
+              <div class="funnel-bar" [style.width.%]="item.percentage || 1">
+                @if (item.percentage > 8) {
+                  <span class="funnel-percentage-tag">{{ item.percentage }}%</span>
+                }
+              </div>
+            </div>
+            <div class="funnel-count">{{ item.count }} aplicaciones</div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Actividad Reciente -->
+    <div class="card bi-row-card">
+      <h3 class="bi-card-title">Últimas Postulaciones Recibidas</h3>
+      <p class="text-muted mb-4" style="font-size: 0.85rem;">Monitoreo en tiempo real de las últimas postulaciones recibidas en el sistema.</p>
+      
+      <div class="table-container shadow-minimal">
+        <table class="responsive-table compact-table">
+          <thead>
+            <tr>
+              <th>Candidato</th>
+              <th>Vacante</th>
+              <th>Fecha</th>
+              <th>Fase</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of recentPostulations(); track p.id) {
+              <tr>
+                <td style="font-weight: 600;">{{ p.candidato?.nombre }} {{ p.candidato?.apellido }}</td>
+                <td>{{ p.oferta?.titulo }}</td>
+                <td style="white-space: nowrap;">{{ p.fecha | date:'dd/MM/yyyy' }}</td>
+                <td>
+                  <span class="badge" 
+                    [class.badge-info]="(p.fase_alcanzada || '').toLowerCase() === 'postulado'"
+                    [class.badge-warning]="(p.fase_alcanzada || '').toLowerCase() === 'aprobó entrevista técnica'"
+                    [class.badge-danger]="(p.fase_alcanzada || '').toLowerCase() === 'oferta realizada'"
+                    [class.badge-success]="(p.fase_alcanzada || '').toLowerCase() === 'contratado'">
+                    {{ p.fase_alcanzada || 'recibido' | titlecase }}
+                  </span>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                  No se registran postulaciones recientes.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>

@@ -16,7 +16,7 @@
 
 .ia-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 24px;
 }
 
@@ -69,6 +69,11 @@
 .offers-color {
   background-color: rgba(245, 158, 11, 0.1);
   color: #f59e0b;
+}
+
+.rf-color {
+  background-color: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
 }
 
 .card-description {

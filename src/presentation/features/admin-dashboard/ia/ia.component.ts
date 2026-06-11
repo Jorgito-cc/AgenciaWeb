@@ -52,11 +52,13 @@ export class AdminIAComponent implements OnInit {
   // Action training states
   readonly trainingCandidatos = signal<boolean>(false);
   readonly trainingOfertas = signal<boolean>(false);
+  readonly trainingRF = signal<boolean>(false);
+  readonly rfTrained = signal<boolean>(localStorage.getItem('rf_trained') === 'true');
 
   // Modal signals
   readonly showModal = signal<boolean>(false);
   readonly modalData = signal<{
-    type: 'candidatos' | 'ofertas';
+    type: 'candidatos' | 'ofertas' | 'rf';
     success: boolean;
     title: string;
     message: string;
@@ -311,6 +313,69 @@ export class AdminIAComponent implements OnInit {
         message: 'No se pudo parsear la respuesta del servidor.',
         total: 0,
         k: 0
+      };
+    }
+  }
+
+  trainRandomForest(): void {
+    this.trainingRF.set(true);
+    const mutation = `
+      mutation {
+        dispararEntrenamientoRandomForestManual
+      }
+    `;
+
+    this.gqlService.mutate<{ dispararEntrenamientoRandomForestManual: string }>(mutation, {}, 'springboot').subscribe({
+      next: (res) => {
+        this.trainingRF.set(false);
+        const rawResponse = res.data?.dispararEntrenamientoRandomForestManual || '';
+        
+        // Parse the response
+        const parsed = this.parseRFResponse(rawResponse);
+
+        if (parsed.success) {
+          this.toastService.success('Entrenamiento de Random Forest finalizado con éxito');
+          this.rfTrained.set(true);
+          localStorage.setItem('rf_trained', 'true');
+
+          // Open modal with the fresh data
+          this.modalData.set({
+            type: 'rf',
+            success: true,
+            title: 'Resultados del Clasificador Random Forest',
+            message: parsed.message || 'El modelo Random Forest se ha entrenado con éxito.',
+            total: parsed.total,
+            k: 0,
+            clusters: []
+          });
+          this.showModal.set(true);
+        } else {
+          this.toastService.error(parsed.message || 'Error en el entrenamiento de Random Forest');
+        }
+      },
+      error: (err) => {
+        this.trainingRF.set(false);
+        this.toastService.error(err.message || 'Error de conexión durante el entrenamiento de Random Forest');
+      }
+    });
+  }
+
+  private parseRFResponse(responseStr: string): { success: boolean; message: string; total: number } {
+    try {
+      const successMatch = responseStr.match(/success=([a-zA-Z0-9_]+)/);
+      const messageMatch = responseStr.match(/message=([^,{}]+)/);
+      const totalMatch = responseStr.match(/totalEntrenados=(\d+)/);
+
+      const success = successMatch ? successMatch[1] === 'true' : false;
+      const message = messageMatch ? messageMatch[1].trim() : '';
+      const total = totalMatch ? parseInt(totalMatch[1], 10) : 0;
+
+      return { success, message, total };
+    } catch (e) {
+      return {
+        success: false,
+        message: 'No se pudo parsear la respuesta de Random Forest.',
+        total: 0
       };
     }
   }

@@ -192,6 +192,66 @@
         }
       </div>
     </div>
+
+    <!-- COLUMN 3: RANDOM FOREST -->
+    <div class="card ia-card">
+      <div class="card-header-flex">
+        <div class="title-section">
+          <div class="icon-wrapper rf-color">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+          <h3>Clasificador Random Forest</h3>
+        </div>
+        
+        <div class="status-badge-container">
+          @if (rfTrained()) {
+            <span class="badge badge-success">Entrenado</span>
+          } @else {
+            <span class="badge badge-warning">Sin Entrenar</span>
+          }
+        </div>
+      </div>
+
+      <p class="text-muted card-description">
+        Entrena el modelo supervisado para predecir el éxito de postulaciones basándose en historial previo y compatibilidad multidimensional (salarios, experiencia, habilidades y nivel académico).
+      </p>
+
+      <div class="last-training-info">
+        @if (rfTrained()) {
+          <span class="info-label">Estado del Modelo:</span>
+          <span class="info-value">Listo para inferencias</span>
+        } @else {
+          <span class="info-label">Estado:</span>
+          <span class="info-value text-muted">Requiere entrenamiento inicial</span>
+        }
+      </div>
+
+      <div class="action-section" style="margin-bottom: 0;">
+        <button 
+          class="btn btn-primary btn-full" 
+          [disabled]="trainingRF()" 
+          (click)="trainRandomForest()">
+          @if (trainingRF()) {
+            <span class="spinner" style="width: 16px; height: 16px; border-width: 2px; border-top-color: white;"></span>
+            Entrenando clasificador...
+          } @else {
+            <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Ejecutar Entrenamiento Random Forest
+          }
+        </button>
+      </div>
+
+      <div class="empty-placeholder" style="margin-top: 24px; padding: 24px 20px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 32px; height: 32px;">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <p style="font-size: 0.8rem;">El modelo se entrena sobre el historial completo de postulaciones existentes para mejorar la precisión de idoneidad.</p>
+      </div>
+    </div>
   </div>
 
   <!-- TRAINING RESULTS MODAL -->
@@ -200,7 +260,7 @@
       <div class="modal-content report-modal">
         <div class="modal-header">
           <div class="header-title-wrapper">
-            <span class="modal-badge">K-Means ML</span>
+            <span class="modal-badge">{{ modalData().type === 'rf' ? 'Random Forest' : 'K-Means ML' }}</span>
             <h2>{{ modalData().title }}</h2>
           </div>
           <button class="close-modal-btn" (click)="closeModal()">
@@ -219,7 +279,7 @@
             </div>
             <div class="banner-text">
               <h4>¡Entrenamiento Completado!</h4>
-              <p>El modelo K-Means se ha ejecutado y sincronizado con éxito.</p>
+              <p>El modelo {{ modalData().type === 'rf' ? 'Random Forest' : 'K-Means' }} se ha ejecutado y sincronizado con éxito.</p>
             </div>
           </div>
 
@@ -228,23 +288,39 @@
               <span class="metric-label">Registros Analizados</span>
               <span class="metric-val">{{ modalData().total }}</span>
             </div>
-            <div class="metric-card">
-              <span class="metric-label">Clústeres Creados (K)</span>
-              <span class="metric-val">{{ modalData().k }}</span>
-            </div>
+            @if (modalData().type === 'rf') {
+              <div class="metric-card">
+                <span class="metric-label">Tipo de Modelo</span>
+                <span class="metric-val" style="font-size: 1.1rem; padding: 6px 0; font-weight: 700;">Supervisado</span>
+              </div>
+            } @else {
+              <div class="metric-card">
+                <span class="metric-label">Clústeres Creados (K)</span>
+                <span class="metric-val">{{ modalData().k }}</span>
+              </div>
+            }
           </div>
 
-          <div class="detected-clusters-section">
-            <h4>Grupos Segmentados y Catalogados por Gemini:</h4>
-            <div class="modal-clusters-list">
-              @for (c of modalData().clusters; track c.id) {
-                <div class="modal-cluster-item">
-                  <div class="cluster-id-indicator">#{{ c.clusterNumero }}</div>
-                  <div class="cluster-name-text">{{ c.nombre }}</div>
-                </div>
-              }
+          @if (modalData().type !== 'rf') {
+            <div class="detected-clusters-section">
+              <h4>Grupos Segmentados y Catalogados por Gemini:</h4>
+              <div class="modal-clusters-list">
+                @for (c of modalData().clusters; track c.id) {
+                  <div class="modal-cluster-item">
+                    <div class="cluster-id-indicator">#{{ c.clusterNumero }}</div>
+                    <div class="cluster-name-text">{{ c.nombre }}</div>
+                  </div>
+                }
+              </div>
             </div>
-          </div>
+          } @else {
+            <div class="detected-clusters-section">
+              <h4>Detalles del Entrenamiento:</h4>
+              <p style="font-size: 0.85rem; line-height: 1.5; color: var(--text-muted);">
+                El clasificador Random Forest se ha entrenado analizando variables clave de todas las postulaciones disponibles en la base de datos PostgreSQL. El archivo del modelo <code>random_forest_postulations.pkl</code> ha sido guardado y optimizado en el microservicio de Python.
+              </p>
+            </div>
+          }
         </div>
 
         <div class="modal-footer">

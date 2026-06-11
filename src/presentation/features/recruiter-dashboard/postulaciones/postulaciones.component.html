@@ -133,6 +133,32 @@
               <span class="text-muted" style="font-size: 0.875rem; font-style: italic;">No se subió ningún archivo CV para esta postulación</span>
             }
           </div>
+
+          <!-- Match Score Inline (IA Random Forest) -->
+          <div style="margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+            <span class="text-muted" style="display: block; font-size: 0.875rem; margin-bottom: 8px; font-weight: 500;">Compatibilidad Vacante (IA Random Forest)</span>
+            @if (loadingPrediction()) {
+              <div style="display: flex; align-items: center; gap: 8px; padding: 12px; background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                <span class="spinner" style="width: 16px; height: 16px; border-width: 2px;"></span>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Calculando idoneidad en tiempo real...</span>
+              </div>
+            } @else {
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; background-color: var(--bg-main); border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span class="badge" 
+                    [class.badge-success]="matchScore() >= 70"
+                    [class.badge-warning]="matchScore() >= 40 && matchScore() < 70"
+                    [class.badge-danger]="matchScore() < 40"
+                    style="font-size: 0.85rem; padding: 6px 12px; font-weight: 700;">
+                    {{ matchScore() }}% Match
+                  </span>
+                  <span style="font-size: 0.85rem; font-weight: 600; color: var(--dark-color);">
+                    {{ matchRecommendation() }}
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
         </div>
         
         <div class="modal-footer">
