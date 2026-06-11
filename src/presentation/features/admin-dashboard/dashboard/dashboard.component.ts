@@ -22,8 +22,6 @@ export class AdminDashboardComponent implements OnInit {
   
   // Loading states signals
   readonly loadingStats = signal<boolean>(false);
-  readonly trainingKmeans = signal<boolean>(false);
-  readonly trainingRF = signal<boolean>(false);
 
   ngOnInit(): void {
     this.loadStats();
@@ -60,47 +58,5 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  trainKmeans(): void {
-    this.trainingKmeans.set(true);
-    const mutation = `
-      mutation {
-        dispararEntrenamientoKMeansManual
-      }
-    `;
 
-    this.gqlService.mutate<{ dispararEntrenamientoKMeansManual: string }>(mutation, {}, 'springboot').subscribe({
-      next: (res) => {
-        this.trainingKmeans.set(false);
-        const msg = res.data?.dispararEntrenamientoKMeansManual || 'Entrenamiento de KMeans completado con éxito.';
-        this.toastService.success(msg);
-        // Refresh stats since clustering affects offer and candidate cluster assignments
-        this.loadStats();
-      },
-      error: (err) => {
-        this.trainingKmeans.set(false);
-        this.toastService.error(err.message || 'Error durante el entrenamiento K-Means');
-      }
-    });
-  }
-
-  trainRandomForest(): void {
-    this.trainingRF.set(true);
-    const mutation = `
-      mutation {
-        dispararEntrenamientoRandomForestManual
-      }
-    `;
-
-    this.gqlService.mutate<{ dispararEntrenamientoRandomForestManual: string }>(mutation, {}, 'springboot').subscribe({
-      next: (res) => {
-        this.trainingRF.set(false);
-        const msg = res.data?.dispararEntrenamientoRandomForestManual || 'Entrenamiento de Random Forest completado con éxito.';
-        this.toastService.success(msg);
-      },
-      error: (err) => {
-        this.trainingRF.set(false);
-        this.toastService.error(err.message || 'Error durante el entrenamiento Random Forest');
-      }
-    });
-  }
 }

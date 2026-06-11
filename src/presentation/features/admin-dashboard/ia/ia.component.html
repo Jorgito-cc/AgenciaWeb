@@ -1,0 +1,256 @@
+<div class="admin-ia-container">
+  <div class="page-header">
+    <div>
+      <h1>Inteligencia Artificial y Segmentación</h1>
+      <p class="text-muted">Entrena y administra los modelos de clustering K-Means para segmentar candidatos y ofertas laborales de manera automática.</p>
+    </div>
+  </div>
+
+  <div class="ia-grid">
+    <!-- COLUMN 1: CANDIDATOS -->
+    <div class="card ia-card">
+      <div class="card-header-flex">
+        <div class="title-section">
+          <div class="icon-wrapper candidates-color">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            </svg>
+          </div>
+          <h3>Clustering de Candidatos</h3>
+        </div>
+        
+        <div class="status-badge-container">
+          @if (candidatosTrained()) {
+            <span class="badge badge-success">Entrenado</span>
+          } @else {
+            <span class="badge badge-warning">Sin Entrenar</span>
+          }
+        </div>
+      </div>
+
+      <p class="text-muted card-description">
+        Segmenta a los candidatos en grupos según sus pretensiones salariales, nivel educativo, modalidad preferida y habilidades técnicas.
+      </p>
+
+      <div class="last-training-info">
+        @if (candidatosTrained() && candidatosLastTrainedDate()) {
+          <span class="info-label">Último entrenamiento:</span>
+          <span class="info-value">{{ candidatosLastTrainedDate() | date:'dd/MM/yyyy HH:mm' }}</span>
+        } @else {
+          <span class="info-label">Estado:</span>
+          <span class="info-value text-muted">Requiere entrenamiento inicial</span>
+        }
+      </div>
+
+      <div class="action-section">
+        <button 
+          class="btn btn-primary btn-full" 
+          [disabled]="trainingCandidatos() || loadingCandidatoClusters()" 
+          (click)="trainCandidatos()">
+          @if (trainingCandidatos()) {
+            <span class="spinner" style="width: 16px; height: 16px; border-width: 2px; border-top-color: white;"></span>
+            Entrenando candidatos...
+          } @else {
+            <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Ejecutar Entrenamiento de Candidatos
+          }
+        </button>
+      </div>
+
+      <!-- CANDIDATE CLUSTERS TABLE -->
+      <div class="clusters-table-section">
+        <h4 class="section-title">Clústeres Identificados</h4>
+        
+        @if (loadingCandidatoClusters()) {
+          <div class="loading-placeholder">
+            <span class="spinner"></span>
+            <p>Cargando clústeres...</p>
+          </div>
+        } @else if (candidatosTrained()) {
+          <div class="table-container shadow-minimal">
+            <table class="responsive-table">
+              <thead>
+                <tr>
+                  <th style="width: 100px;">Clúster</th>
+                  <th>Nombre del Grupo (Asignado por Gemini)</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (cluster of candidatoClusters(); track cluster.id) {
+                  <tr>
+                    <td>
+                      <span class="cluster-num-badge">#{{ cluster.clusterNumero }}</span>
+                    </td>
+                    <td class="font-medium text-dark">{{ cluster.nombre }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p>No hay clústeres generados para Candidatos. Ejecuta el entrenamiento para segmentar la base de datos.</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- COLUMN 2: OFERTAS -->
+    <div class="card ia-card">
+      <div class="card-header-flex">
+        <div class="title-section">
+          <div class="icon-wrapper offers-color">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <h3>Clustering de Ofertas</h3>
+        </div>
+        
+        <div class="status-badge-container">
+          @if (ofertasTrained()) {
+            <span class="badge badge-success">Entrenado</span>
+          } @else {
+            <span class="badge badge-warning">Sin Entrenar</span>
+          }
+        </div>
+      </div>
+
+      <p class="text-muted card-description">
+        Agrupa las vacantes de trabajo basándose en los sueldos ofrecidos, años de experiencia requeridos, categoría y habilidades técnicas solicitadas.
+      </p>
+
+      <div class="last-training-info">
+        @if (ofertasTrained() && ofertasLastTrainedDate()) {
+          <span class="info-label">Último entrenamiento:</span>
+          <span class="info-value">{{ ofertasLastTrainedDate() | date:'dd/MM/yyyy HH:mm' }}</span>
+        } @else {
+          <span class="info-label">Estado:</span>
+          <span class="info-value text-muted">Requiere entrenamiento inicial</span>
+        }
+      </div>
+
+      <div class="action-section">
+        <button 
+          class="btn btn-primary btn-full" 
+          [disabled]="trainingOfertas() || loadingOfertaClusters()" 
+          (click)="trainOfertas()">
+          @if (trainingOfertas()) {
+            <span class="spinner" style="width: 16px; height: 16px; border-width: 2px; border-top-color: white;"></span>
+            Entrenando ofertas...
+          } @else {
+            <svg class="btn-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"/>
+            </svg>
+            Ejecutar Entrenamiento de Ofertas
+          }
+        </button>
+      </div>
+
+      <!-- OFERTAS CLUSTERS TABLE -->
+      <div class="clusters-table-section">
+        <h4 class="section-title">Clústeres Identificados</h4>
+        
+        @if (loadingOfertaClusters()) {
+          <div class="loading-placeholder">
+            <span class="spinner"></span>
+            <p>Cargando clústeres...</p>
+          </div>
+        } @else if (ofertasTrained()) {
+          <div class="table-container shadow-minimal">
+            <table class="responsive-table">
+              <thead>
+                <tr>
+                  <th style="width: 100px;">Clúster</th>
+                  <th>Nombre del Grupo (Asignado por Gemini)</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (cluster of ofertaClusters(); track cluster.id) {
+                  <tr>
+                    <td>
+                      <span class="cluster-num-badge">#{{ cluster.clusterNumero }}</span>
+                    </td>
+                    <td class="font-medium text-dark">{{ cluster.nombre }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="empty-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p>No hay clústeres generados para Ofertas. Ejecuta el entrenamiento para segmentar la base de datos.</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- TRAINING RESULTS MODAL -->
+  @if (showModal()) {
+    <div class="modal-overlay">
+      <div class="modal-content report-modal">
+        <div class="modal-header">
+          <div class="header-title-wrapper">
+            <span class="modal-badge">K-Means ML</span>
+            <h2>{{ modalData().title }}</h2>
+          </div>
+          <button class="close-modal-btn" (click)="closeModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="success-banner">
+            <div class="success-icon-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div class="banner-text">
+              <h4>¡Entrenamiento Completado!</h4>
+              <p>El modelo K-Means se ha ejecutado y sincronizado con éxito.</p>
+            </div>
+          </div>
+
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <span class="metric-label">Registros Analizados</span>
+              <span class="metric-val">{{ modalData().total }}</span>
+            </div>
+            <div class="metric-card">
+              <span class="metric-label">Clústeres Creados (K)</span>
+              <span class="metric-val">{{ modalData().k }}</span>
+            </div>
+          </div>
+
+          <div class="detected-clusters-section">
+            <h4>Grupos Segmentados y Catalogados por Gemini:</h4>
+            <div class="modal-clusters-list">
+              @for (c of modalData().clusters; track c.id) {
+                <div class="modal-cluster-item">
+                  <div class="cluster-id-indicator">#{{ c.clusterNumero }}</div>
+                  <div class="cluster-name-text">{{ c.nombre }}</div>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeModal()">Entendido</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

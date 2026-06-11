@@ -65,6 +65,13 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'ia',
+        loadComponent: () =>
+          import('../presentation/features/admin-dashboard/ia/ia.component').then(
+            (m) => m.AdminIAComponent
+          )
+      },
+      {
         path: 'usuarios',
         loadComponent: () =>
           import('../presentation/features/admin-dashboard/usuarios/usuarios.component').then(
