@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastService } from '../../../core/services/toast.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { GraphQLService } from '../../../core/services/graphql.service';
 
 @Component({
   selector: 'app-info',
@@ -16,28 +17,14 @@ export class InfoComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   private readonly authService = inject(AuthService);
+  private readonly graphqlService = inject(GraphQLService);
 
   readonly section = signal<string>('');
   readonly isAuthenticated = this.authService.isAuthenticated;
 
-  // Mock data for jobs
-  readonly jobs = signal([
-    { id: 1, title: 'Desarrollador Fullstack Angular/Node', company: 'TechSolutions', location: 'Remoto', salary: '$2,500 - $3,500', category: 'Tecnología', type: 'Tiempo Completo' },
-    { id: 2, title: 'Administrador de Servidores Cloud', company: 'GlobalData', location: 'Bogotá, CO', salary: '$1,800 - $2,400', category: 'Tecnología', type: 'Tiempo Completo' },
-    { id: 3, title: 'Gerente Administrativo', company: 'Inversiones Omega', location: 'Lima, PE', salary: '$3,000 - $4,000', category: 'Administración', type: 'Tiempo Completo' },
-    { id: 4, title: 'Ejecutivo de Ventas B2B', company: 'SaaSify', location: 'Santiago, CL', salary: '$1,500 + comisiones', category: 'Ventas', type: 'Tiempo Completo' },
-    { id: 5, title: 'Especialista en Growth Marketing', company: 'AdVance Agency', location: 'Remoto', salary: '$2,000 - $2,800', category: 'Marketing', type: 'Medio Tiempo' },
-    { id: 6, title: 'Agente de Soporte al Cliente Bilingüe', company: 'HelpCenter Inc', location: 'Remoto', salary: '$900 - $1,200', category: 'Atención al cliente', type: 'Tiempo Completo' }
-  ]);
-
-  // Mock data for companies
-  readonly companies = signal([
-    { id: 1, name: 'TechSolutions', sector: 'Tecnología y Software', jobsCount: 14, desc: 'Líder en desarrollo de soluciones a la medida para empresas en LATAM.', bg: '#eff6ff', color: '#3b82f6', letter: 'T' },
-    { id: 2, name: 'GlobalData', sector: 'Seguridad e Infraestructura', jobsCount: 5, desc: 'Especialistas en cloud hosting, auditoría de sistemas e infraestructura TI.', bg: '#f5f3ff', color: '#7c3aed', letter: 'G' },
-    { id: 3, name: 'Inversiones Omega', sector: 'Servicios Financieros', jobsCount: 8, desc: 'Grupo multinacional de asesoría financiera, contabilidad y auditorías legales.', bg: '#ecfdf5', color: '#10b981', letter: 'I' },
-    { id: 4, name: 'AdVance Agency', sector: 'Marketing y Publicidad', jobsCount: 12, desc: 'Agencia creativa enfocada en posicionamiento digital y campañas SEO globales.', bg: '#fffbeb', color: '#f59e0b', letter: 'A' },
-    { id: 5, name: 'SaaSify', sector: 'Software como Servicio (SaaS)', jobsCount: 9, desc: 'Plataforma líder en automatización de ventas para medianas empresas.', bg: '#fdf2f8', color: '#ec4899', letter: 'S' }
-  ]);
+  // Empty signals by default (no static mock data)
+  readonly jobs = signal<any[]>([]);
+  readonly companies = signal<any[]>([]);
 
   // Mock data for resources
   readonly resources = signal([
@@ -55,6 +42,100 @@ export class InfoComponent implements OnInit {
     this.route.url.subscribe(urlSegments => {
       const path = urlSegments[0]?.path || '';
       this.section.set(path);
+      if (path === 'empleos') {
+        this.fetchRealJobs();
+      } else if (path === 'empresas') {
+        this.fetchRealCompanies();
+      }
+    });
+  }
+
+  fetchRealJobs(): void {
+    const query = `
+      query {
+        listarOfertas {
+          id
+          titulo
+          descripcion
+          contrato
+          requisitos
+          experiencia_tiempo
+          modalidad_trabajo
+          sueldo
+          categoria {
+            nombre
+          }
+          reclutador {
+            empresa {
+              nombre_comercial
+            }
+          }
+        }
+      }
+    `;
+
+    this.graphqlService.query<any>(query, {}, 'springboot').subscribe({
+      next: (response) => {
+        if (response?.data?.listarOfertas) {
+          const mappedJobs = response.data.listarOfertas.map((item: any) => ({
+            id: item.id,
+            title: item.titulo,
+            company: item.reclutador?.empresa?.nombre_comercial || 'Empresa Aliada',
+            location: item.modalidad_trabajo || 'Remoto',
+            salary: item.sueldo ? `$${item.sueldo.toLocaleString()}` : 'A convenir',
+            category: item.categoria?.nombre || 'General',
+            type: item.contrato || 'Tiempo Completo'
+          }));
+          this.jobs.set(mappedJobs);
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching real jobs from SpringBoot:', err);
+      }
+    });
+  }
+
+  fetchRealCompanies(): void {
+    const query = `
+      query {
+        listarEmpresas {
+          id
+          nombre_comercial
+          direccion
+          celular
+        }
+      }
+    `;
+
+    this.graphqlService.query<any>(query, {}, 'springboot').subscribe({
+      next: (response) => {
+        if (response?.data?.listarEmpresas) {
+          const colors = [
+            { bg: '#eff6ff', color: '#3b82f6' },
+            { bg: '#f5f3ff', color: '#7c3aed' },
+            { bg: '#ecfdf5', color: '#10b981' },
+            { bg: '#fffbeb', color: '#f59e0b' },
+            { bg: '#fdf2f8', color: '#ec4899' }
+          ];
+          const mappedCompanies = response.data.listarEmpresas.map((item: any, idx: number) => {
+            const style = colors[idx % colors.length];
+            return {
+              id: item.id,
+              name: item.nombre_comercial || 'Empresa Asociada',
+              sector: 'Socio Comercial',
+              jobsCount: 0,
+              desc: item.direccion || 'Sin dirección registrada.',
+              bg: style.bg,
+              color: style.color,
+              letter: (item.nombre_comercial || 'E')[0].toUpperCase()
+            };
+          });
+          this.companies.set(mappedCompanies);
+        }
+      },
+      error: (err) => {
+        console.error('Error fetching real companies from SpringBoot:', err);
+      }
     });
   }
 
