@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { GraphQLService } from '../../../../core/services/graphql.service';
 import { ToastService } from '../../../../core/services/toast.service';
 
+declare const google: any;
+
 @Component({
   selector: 'app-admin-empresas',
   standalone: true,
@@ -33,6 +35,8 @@ export class AdminEmpresasComponent implements OnInit {
   readonly formNit = signal<number>(0);
   readonly formDireccion = signal<string>('');
   readonly formCelular = signal<number>(0);
+  readonly formLatitud = signal<number>(-17.783327);
+  readonly formLongitud = signal<number>(-63.182140);
 
   // Computed search filter
   readonly filteredEmpresas = computed(() => {
@@ -64,6 +68,8 @@ export class AdminEmpresasComponent implements OnInit {
           nit
           direccion
           celular
+          latitud
+          longitud
         }
       }
     `;
@@ -92,7 +98,10 @@ export class AdminEmpresasComponent implements OnInit {
     this.formNit.set(0);
     this.formDireccion.set('');
     this.formCelular.set(0);
+    this.formLatitud.set(-17.783327);
+    this.formLongitud.set(-63.182140);
     this.showModal.set(true);
+    this.initMap(-17.783327, -63.182140);
   }
 
   openEditModal(emp: any): void {
@@ -103,7 +112,64 @@ export class AdminEmpresasComponent implements OnInit {
     this.formNit.set(emp.nit || 0);
     this.formDireccion.set(emp.direccion || '');
     this.formCelular.set(emp.celular || 0);
+    this.formLatitud.set(emp.latitud || -17.783327);
+    this.formLongitud.set(emp.longitud || -63.182140);
     this.showModal.set(true);
+    this.initMap(emp.latitud, emp.longitud);
+  }
+
+  initMap(lat?: number, lng?: number): void {
+    const defaultLat = lat !== undefined && lat !== null && lat !== 0 ? lat : -17.783327;
+    const defaultLng = lng !== undefined && lng !== null && lng !== 0 ? lng : -63.182140;
+
+    this.formLatitud.set(defaultLat);
+    this.formLongitud.set(defaultLng);
+
+    setTimeout(() => {
+      const mapEl = document.getElementById('map');
+      if (!mapEl) return;
+
+      const mapOptions = {
+        center: { lat: defaultLat, lng: defaultLng },
+        zoom: 15,
+        mapTypeId: 'roadmap',
+        mapTypeControl: false,
+        streetViewControl: false
+      };
+
+      const map = new google.maps.Map(mapEl, mapOptions);
+
+      const marker = new google.maps.Marker({
+        position: { lat: defaultLat, lng: defaultLng },
+        map: map,
+        draggable: true,
+        title: 'Seleccionar ubicación'
+      });
+
+      const geocoder = new google.maps.Geocoder();
+
+      const updateLocation = (latVal: number, lngVal: number) => {
+        this.formLatitud.set(latVal);
+        this.formLongitud.set(lngVal);
+        
+        geocoder.geocode({ location: { lat: latVal, lng: lngVal } }, (results: any, status: any) => {
+          if (status === 'OK' && results[0]) {
+            this.formDireccion.set(results[0].formatted_address);
+          }
+        });
+      };
+
+      map.addListener('click', (event: any) => {
+        const newPos = event.latLng;
+        marker.setPosition(newPos);
+        updateLocation(newPos.lat(), newPos.lng());
+      });
+
+      marker.addListener('dragend', () => {
+        const newPos = marker.getPosition();
+        updateLocation(newPos.lat(), newPos.lng());
+      });
+    }, 150);
   }
 
   closeModal(): void {
@@ -134,6 +200,8 @@ export class AdminEmpresasComponent implements OnInit {
         $nit: Int
         $direccion: String
         $celular: Int
+        $latitud: Float
+        $longitud: Float
       ) {
         crearEmpresa(
           nombre_legal: $nombreLegal
@@ -141,6 +209,8 @@ export class AdminEmpresasComponent implements OnInit {
           nit: $nit
           direccion: $direccion
           celular: $celular
+          latitud: $latitud
+          longitud: $longitud
         ) {
           id
         }
@@ -152,7 +222,9 @@ export class AdminEmpresasComponent implements OnInit {
       nombreComercial: this.formNombreComercial(),
       nit: this.formNit() || null,
       direccion: this.formDireccion() || null,
-      celular: this.formCelular() || null
+      celular: this.formCelular() || null,
+      latitud: this.formLatitud() || null,
+      longitud: this.formLongitud() || null
     };
 
     this.gqlService.mutate(mutation, variables).subscribe({
@@ -178,6 +250,8 @@ export class AdminEmpresasComponent implements OnInit {
         $nit: Int
         $direccion: String
         $celular: Int
+        $latitud: Float
+        $longitud: Float
       ) {
         actualizarEmpresa(
           id: $id
@@ -186,6 +260,8 @@ export class AdminEmpresasComponent implements OnInit {
           nit: $nit
           direccion: $direccion
           celular: $celular
+          latitud: $latitud
+          longitud: $longitud
         ) {
           id
         }
@@ -198,7 +274,9 @@ export class AdminEmpresasComponent implements OnInit {
       nombreComercial: this.formNombreComercial(),
       nit: this.formNit() || null,
       direccion: this.formDireccion() || null,
-      celular: this.formCelular() || null
+      celular: this.formCelular() || null,
+      latitud: this.formLatitud() || null,
+      longitud: this.formLongitud() || null
     };
 
     this.gqlService.mutate(mutation, variables).subscribe({

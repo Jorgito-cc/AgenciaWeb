@@ -116,6 +116,16 @@
               <label class="form-label" for="emp-direccion">Dirección</label>
               <input type="text" id="emp-direccion" class="form-input" [value]="formDireccion()" (input)="formDireccion.set($any($event.target).value)"/>
             </div>
+
+            <div class="form-group">
+              <label class="form-label" style="display: flex; align-items: center; gap: 4px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                Ubicación en el mapa <span style="font-size: 11px; color: var(--text-muted); font-weight: normal;">— Haz clic o arrastra el pin para seleccionar la ubicación</span>
+              </label>
+              <div id="map"></div>
+            </div>
           </div>
 
           <div class="modal-footer">

@@ -86,3 +86,11 @@
   width: 20px;
   height: 20px;
 }
+
+#map {
+  height: 300px;
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  margin-top: 8px;
+}
