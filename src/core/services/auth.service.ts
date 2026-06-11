@@ -2,6 +2,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import { GraphQLService } from './graphql.service';
 import { map, switchMap } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';
+import * as bcrypt from 'bcryptjs';
 
 export interface User {
   id: string;
@@ -33,28 +34,79 @@ export class AuthService {
    * Log in with traditional email/password credentials
    */
   loginWithPassword(email: string, password: string): Observable<User> {
-    const mutation = `
-      mutation LoginUserWithPassword($email: String!, $password: String!) {
-        loginUserWithPassword(email: $email, password: $password) {
-          success
-          message
-          token
-          error
+    const query = `
+      query GetUserForAuth($email: String!) {
+        getUserByEmail(email: $email) {
+          id
+          nombre
+          apellido
+          email
+          password
+          telefono
+          rolObj {
+            nombre
+          }
         }
       }
     `;
 
-    return this.gqlService.mutate<{ loginUserWithPassword: any }>(
-      mutation,
-      { email, password },
-      'fastapi'
+    return this.gqlService.query<{ getUserByEmail: any }>(
+      query,
+      { email },
+      'springboot'
     ).pipe(
       switchMap(res => {
-        const data = res.data?.loginUserWithPassword;
-        if (!data || !data.success || !data.token) {
-          return throwError(() => new Error(data?.error || data?.message || 'Error de inicio de sesión'));
+        const userObj = res.data?.getUserByEmail;
+        if (!userObj) {
+          return throwError(() => new Error('Usuario no registrado en el sistema'));
         }
-        return this.fetchUserInfo(email, data.token);
+
+        if (!userObj.password) {
+          return throwError(() => new Error('El usuario no tiene una contraseña configurada'));
+        }
+
+        try {
+          const isMatch = bcrypt.compareSync(password, userObj.password);
+          if (!isMatch) {
+            return throwError(() => new Error('Contraseña incorrecta'));
+          }
+        } catch (e) {
+          console.error('Bcrypt validation error:', e);
+          return throwError(() => new Error('Error al validar la contraseña'));
+        }
+
+        const rol = userObj.rolObj?.nombre || 'candidato';
+        const normalizedRol = rol.toLowerCase();
+        
+        if (normalizedRol !== 'administrador' && normalizedRol !== 'reclutador') {
+          return throwError(() => new Error('Acceso denegado: Rol no autorizado para la interfaz web.'));
+        }
+
+        const mockToken = btoa(JSON.stringify({ 
+          sub: userObj.id, 
+          email: userObj.email, 
+          rol: normalizedRol, 
+          exp: Math.floor(Date.now() / 1000) + 3600 
+        }));
+
+        const user: User = {
+          id: userObj.id,
+          nombre: userObj.nombre,
+          apellido: userObj.apellido,
+          email: userObj.email,
+          telefono: userObj.telefono,
+          rol: normalizedRol as 'administrador' | 'reclutador',
+          token: mockToken
+        };
+
+        localStorage.setItem('auth_token', mockToken);
+        localStorage.setItem('auth_user', JSON.stringify(user));
+        this.currentUser.set(user);
+        
+        return new Observable<User>(subscriber => {
+          subscriber.next(user);
+          subscriber.complete();
+        });
       })
     );
   }

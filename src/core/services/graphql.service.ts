@@ -9,7 +9,7 @@ export class GraphQLService {
   private readonly http = inject(HttpClient);
   
   private readonly SPRINGBOOT_URL = 'https://agenciaspring-production.up.railway.app/graphql';
-  private readonly FASTAPI_URL = 'http://67.205.151.129:8000/graphql';
+  private readonly FASTAPI_URL = 'https://python.erikaguilarchuviru.dev/graphql';
   private readonly NESTJS_URL = 'http://3.20.223.117:3000/graphql';
 
   /**
