@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 export class GraphQLService {
   private readonly http = inject(HttpClient);
   
-  private readonly SPRINGBOOT_URL = 'https://agenciaspring-production.up.railway.app/graphql';
+  private readonly SPRINGBOOT_URL = 'https://springboot.erikaguilarchuviru.dev/graphql';
   private readonly FASTAPI_URL = 'https://python.erikaguilarchuviru.dev/graphql';
   private readonly NESTJS_URL = 'https://nestjs.erikaguilarchuviru.dev/graphql';
 
