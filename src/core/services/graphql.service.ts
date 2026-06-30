@@ -9,7 +9,7 @@ export class GraphQLService {
   private readonly http = inject(HttpClient);
 
 
-  private readonly SPRINGBOOT_URL = 'https://sprintboot.jorgechoquecalle.engineer/graphiql';
+  private readonly SPRINGBOOT_URL = 'https://sprintboot.jorgechoquecalle.engineer/graphql';
   private readonly FASTAPI_URL = 'https://python.erikaguilarchuviru.dev/graphql';
   private readonly NESTJS_URL = 'https://nestjs.erikaguilarchuviru.dev/graphql';
 
