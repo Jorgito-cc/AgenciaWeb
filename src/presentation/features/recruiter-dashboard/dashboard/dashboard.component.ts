@@ -69,8 +69,8 @@ export class RecruiterDashboardComponent implements OnInit {
 
   private fetchBusinessStatsAndPipeline(): void {
     const offersQuery = `
-      query {
-        listarOfertas {
+      query ListarOfertasPorReclutador($recruiterId: UUID!) {
+        listarOfertasPorReclutador(reclutadorId: $recruiterId) {
           id
           reclutador {
             id
@@ -80,8 +80,8 @@ export class RecruiterDashboardComponent implements OnInit {
     `;
 
     const postulationsQuery = `
-      query {
-        listarPostulaciones {
+      query ListarPostulacionesPorReclutador($recruiterId: UUID!) {
+        listarPostulacionesPorReclutador(reclutadorId: $recruiterId) {
           id
           fecha
           fase_alcanzada
@@ -101,23 +101,17 @@ export class RecruiterDashboardComponent implements OnInit {
       }
     `;
 
+    const recId = this.recruiterId();
+
     forkJoin({
-      offers: this.gqlService.query<{ listarOfertas: any[] }>(offersQuery),
-      postulations: this.gqlService.query<{ listarPostulaciones: any[] }>(postulationsQuery)
+      offers: this.gqlService.query<{ listarOfertasPorReclutador: any[] }>(offersQuery, { recruiterId: recId }),
+      postulations: this.gqlService.query<{ listarPostulacionesPorReclutador: any[] }>(postulationsQuery, { recruiterId: recId })
     }).subscribe({
       next: (res) => {
-        const recId = this.recruiterId();
-
-        // Filter offers belonging to this recruiter
-        const myOffers = (res.offers.data?.listarOfertas || []).filter(
-          o => o.reclutador?.id === recId
-        );
+        const myOffers = res.offers.data?.listarOfertasPorReclutador || [];
         this.myOffersCount.set(myOffers.length);
 
-        // Filter postulations belonging to this recruiter's offers
-        const filteredPosts = (res.postulations.data?.listarPostulaciones || []).filter(
-          p => p.oferta?.reclutador?.id === recId
-        );
+        const filteredPosts = res.postulations.data?.listarPostulacionesPorReclutador || [];
         this.postulations.set(filteredPosts);
 
         // Calculate counts

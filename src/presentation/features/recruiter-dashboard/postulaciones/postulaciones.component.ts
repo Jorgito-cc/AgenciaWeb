@@ -73,8 +73,8 @@ export class RecruiterPostulacionesComponent implements OnInit {
   loadPostulations(): void {
     this.loadingPostulations.set(true);
     const query = `
-      query {
-        listarPostulaciones {
+      query ListarPostulacionesPorReclutador($recruiterId: UUID!) {
+        listarPostulacionesPorReclutador(reclutadorId: $recruiterId) {
           id
           fecha
           fase_alcanzada
@@ -101,9 +101,9 @@ export class RecruiterPostulacionesComponent implements OnInit {
       }
     `;
 
-    this.gqlService.query<{ listarPostulaciones: any[] }>(query).subscribe({
+    this.gqlService.query<{ listarPostulacionesPorReclutador: any[] }>(query, { recruiterId: this.recruiterId() }).subscribe({
       next: (res) => {
-        this.postulations.set(res.data?.listarPostulaciones || []);
+        this.postulations.set(res.data?.listarPostulacionesPorReclutador || []);
         this.loadingPostulations.set(false);
       },
       error: () => {

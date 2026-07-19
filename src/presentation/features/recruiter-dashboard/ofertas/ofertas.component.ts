@@ -64,12 +64,11 @@ export class RecruiterOfertasComponent implements OnInit {
     this.loadOfertas();
     this.loadCategorias();
   }
-
   loadOfertas(): void {
     this.loadingOfertas.set(true);
     const query = `
-      query {
-        listarOfertas {
+      query ListarOfertasPorReclutador($recruiterId: UUID!) {
+        listarOfertasPorReclutador(reclutadorId: $recruiterId) {
           id
           titulo
           descripcion
@@ -91,9 +90,9 @@ export class RecruiterOfertasComponent implements OnInit {
       }
     `;
 
-    this.gqlService.query<{ listarOfertas: any[] }>(query).subscribe({
+    this.gqlService.query<{ listarOfertasPorReclutador: any[] }>(query, { recruiterId: this.recruiterId() }).subscribe({
       next: (res) => {
-        this.ofertas.set(res.data?.listarOfertas || []);
+        this.ofertas.set(res.data?.listarOfertasPorReclutador || []);
         this.loadingOfertas.set(false);
       },
       error: () => {
@@ -102,7 +101,6 @@ export class RecruiterOfertasComponent implements OnInit {
       }
     });
   }
-
   loadCategorias(): void {
     const query = `
       query {
