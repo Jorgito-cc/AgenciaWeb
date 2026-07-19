@@ -247,7 +247,7 @@ export class ReportesDinamicosComponent implements OnInit {
 
     data.forEach((row) => {
       if (y > 185) {
-        doc.addPage('l', 'mm', 'a4');
+        doc.addPage('a4', 'l');
         y = 20;
         
         doc.setFillColor(91, 75, 219);
