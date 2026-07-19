@@ -191,6 +191,46 @@
         <p class="text-muted">Modalidad de contratación dominante en las ofertas vigentes.</p>
       </div>
     </div>
+
+    <!-- Tiempo de Contratación -->
+    <div class="card kpi-card">
+      <div class="kpi-icon-wrapper ratio-icon-bg" style="background-color: rgba(91, 75, 219, 0.1);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="kpi-svg text-primary" style="color: #5b4bdb;">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="kpi-details">
+        <h3>Tiempo de Contratación</h3>
+        <span class="kpi-large-val">{{ timeToHire() }} días</span>
+        <p class="text-muted">Tiempo promedio transcurrido hasta la contratación.</p>
+      </div>
+    </div>
+
+    <!-- Top Empresas Activas -->
+    <div class="card kpi-card">
+      <div class="kpi-icon-wrapper modality-icon-bg" style="background-color: rgba(16, 185, 129, 0.1);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="kpi-svg text-success" style="color: #10b981;">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="kpi-details">
+        <h3>Empresas más Activas</h3>
+        @for (comp of topCompanies(); track comp.name) {
+          <div class="salary-stat" style="margin-top: 6px; display: flex; flex-direction: column; gap: 4px; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+              <span class="salary-label" style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.85rem; font-weight: 500;">{{ comp.name }}</span>
+              <span class="salary-value" style="color: #10b981; font-weight: 600; font-size: 0.85rem;">{{ comp.count }} ofertas</span>
+            </div>
+            <div style="width: 100%; height: 6px; background-color: #f1f5f9; border-radius: 3px; overflow: hidden; display: block;">
+              <div [style.width.%]="totalOffers() > 0 ? (comp.count / totalOffers()) * 100 : 0" style="height: 100%; background-color: #10b981; border-radius: 3px; transition: width 0.5s ease-out;"></div>
+            </div>
+          </div>
+        }
+        @if (topCompanies().length === 0) {
+          <div class="text-muted">Sin ofertas registradas</div>
+        }
+      </div>
+    </div>
   </div>
 
   <!-- BI Section Title for Analytical Graphs -->

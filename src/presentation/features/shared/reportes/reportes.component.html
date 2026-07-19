@@ -1,0 +1,153 @@
+<div class="reports-container">
+  <!-- Header -->
+  <div class="reports-header">
+    <div class="header-info">
+      <h1>Reportes Inteligentes 🎙️</h1>
+      <p class="text-muted">Genera reportes a medida mediante comandos de voz con IA o seleccionando tablas manualmente.</p>
+    </div>
+  </div>
+
+  <!-- Prompt Area -->
+  <div class="card prompt-card">
+    <div class="prompt-input-group">
+      <input 
+        type="text" 
+        [(ngModel)]="promptText" 
+        placeholder="Ej: 'Mostrar nombre, email y sueldo esperado de los candidatos con pretension mayor a 5000'..."
+        class="prompt-input"
+        (keyup.enter)="enviarPrompt()"
+      />
+      <button 
+        type="button" 
+        (click)="toggleListening()" 
+        [class.listening]="isListening()"
+        class="btn-mic"
+        title="Escuchar comando de voz"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mic-icon">
+          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+          <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 19v4M8 23h8" />
+        </svg>
+        <span>{{ isListening() ? 'Escuchando...' : 'Hablar' }}</span>
+      </button>
+      <button 
+        type="button" 
+        (click)="enviarPrompt()" 
+        class="btn-primary btn-generate-prompt"
+        [disabled]="isLoading() || !promptText().trim()"
+      >
+        Analizar con IA
+      </button>
+    </div>
+    <small class="prompt-tip">💡 Haz clic en "Hablar" y di comandos en español sobre candidatos, ofertas, empresas o usuarios.</small>
+  </div>
+
+  <div class="reports-workspace">
+    <!-- Left Panel: Manual Configuration -->
+    <div class="card config-panel">
+      <h2>Constructor Manual</h2>
+      <p class="text-muted">Configura las columnas del reporte.</p>
+      
+      <!-- Table Selector -->
+      <div class="form-group">
+        <label for="tableSelect">Seleccionar Tabla</label>
+        <select 
+          id="tableSelect" 
+          [ngModel]="selectedTable()" 
+          (ngModelChange)="selectTable($event)"
+          class="form-select"
+        >
+          <option *ngFor="let t of tables()" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+
+      <!-- Fields Checkboxes -->
+      <div class="fields-container" *ngIf="selectedTable()">
+        <h3>Columnas a incluir</h3>
+        <div class="fields-list">
+          <label 
+            *ngFor="let field of schema()[selectedTable()]" 
+            class="checkbox-label"
+            [class.checked]="selectedFields()[field]"
+          >
+            <input 
+              type="checkbox" 
+              [checked]="selectedFields()[field]" 
+              (change)="toggleField(field)"
+            />
+            <span>{{ field }}</span>
+          </label>
+        </div>
+      </div>
+
+      <button 
+        type="button" 
+        (click)="ejecutarQueryManual()" 
+        class="btn-success btn-block"
+        [disabled]="isLoading() || !selectedTable()"
+      >
+        Generar Reporte
+      </button>
+    </div>
+
+    <!-- Right Panel: Data Table & Exports -->
+    <div class="card data-panel">
+      <div class="data-header" *ngIf="queryResults().length > 0">
+        <div class="table-info">
+          <h2>Resultados del Reporte ({{ selectedTable() }})</h2>
+          <span class="badge-results">{{ queryResults().length }} registros</span>
+        </div>
+        <div class="export-actions">
+          <button (click)="exportarPDF()" class="btn-export btn-pdf">
+            PDF
+          </button>
+          <button (click)="exportarExcel()" class="btn-export btn-excel">
+            Excel
+          </button>
+          <button (click)="exportarHTML()" class="btn-export btn-html">
+            Imprimir HTML
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-state" *ngIf="isLoading()">
+        <div class="spinner"></div>
+        <p>Procesando consulta y extrayendo datos...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!isLoading() && queryResults().length === 0">
+        <div class="empty-icon-wrapper">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon">
+            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <line x1="10" y1="9" x2="8" y2="9" />
+          </svg>
+        </div>
+        <h3>No hay datos para mostrar</h3>
+        <p class="text-muted">Usa el comando de voz o selecciona las columnas manualmente para generar un reporte dinámico.</p>
+      </div>
+
+      <!-- Results Table -->
+      <div class="table-wrapper" *ngIf="!isLoading() && queryResults().length > 0">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th *ngFor="let col of resultColumns()">{{ col | titlecase }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of queryResults()">
+              <td *ngFor="let col of resultColumns()">
+                {{ row[col] !== null && row[col] !== undefined ? row[col] : '-' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

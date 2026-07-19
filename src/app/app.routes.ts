@@ -121,6 +121,13 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'reportes',
+        loadComponent: () =>
+          import('../presentation/features/shared/reportes/reportes.component').then(
+            (m) => m.ReportesDinamicosComponent
+          )
+      },
+      {
         path: 'soporte',
         loadComponent: () =>
           import('../presentation/features/shared/soporte/soporte').then(
@@ -163,6 +170,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('../presentation/features/recruiter-dashboard/postulaciones/postulaciones.component').then(
             (m) => m.RecruiterPostulacionesComponent
+          )
+      },
+      {
+        path: 'reportes',
+        loadComponent: () =>
+          import('../presentation/features/shared/reportes/reportes.component').then(
+            (m) => m.ReportesDinamicosComponent
           )
       },
       {
